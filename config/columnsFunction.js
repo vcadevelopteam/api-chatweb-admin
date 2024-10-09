@@ -535,6 +535,22 @@ module.exports = {
             column: "pe.firstcontact + p_offset * interval '1hour'",
             type: "date"
         },
+        personid: {
+            column: "pe.personid"
+        },
+        lastcontact: {
+            column: "pe.lastcontact"
+        },
+        changedate: {
+            column: "pe.changedate + p_offset * INTERVAL '1hour'",
+            type: "date"
+        },
+        changeby: {
+            column: "pe.changeby"
+        },
+        lastattentiongroup: {
+            column: "pe.groups"
+        },
         lastcontact: {
             column: "pe.lastcontact + p_offset * interval '1hour'",
             type: "date"

@@ -1,127 +1,13 @@
-const triggerfunctions = require('../config/triggerfunctions');
-const genericfunctions = require('../config/genericfunctions');
+const triggerfunctions = require("../config/triggerfunctions");
+const genericfunctions = require("../config/genericfunctions");
 
-const { axiosObservable, getErrorCode, printException } = require('../config/helpers');
+const { axiosObservable, getErrorCode, printException } = require("../config/helpers");
 
-const Culqi = require('culqi-node');
-const logger = require('../config/winston');
+const Culqi = require("culqi-node");
+const logger = require("../config/winston");
 
 const bridgeEndpoint = process.env.BRIDGE;
 const whitelist = process.env.WHITELIST;
-
-const getExchangeRate = async (code, requestId) => {
-    const queryString = "UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE";
-    const queryParameters = {
-        code: code,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const changeInvoiceBalance = async (corpId, orgId, balanceId, invoiceId, username, requestId) => {
-    const queryString = "UFN_BALANCE_CHANGEINVOICE";
-    const queryParameters = {
-        balanceid: balanceId,
-        corpid: corpId,
-        invoiceid: invoiceId,
-        orgid: orgId,
-        username: username,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        return queryResult;
-    }
-
-    return null;
-}
-
-const changeInvoicePayment = async (corpId, orgId, invoiceId, status, paymentNote, paymentFile, paymentCommentary, username, requestId) => {
-    const queryString = "UFN_INVOICE_CHANGEPAYMENTSTATUS";
-    const queryParameters = {
-        corpid: corpId,
-        invoiceid: invoiceId,
-        orgid: orgId,
-        paymentcommentary: paymentCommentary,
-        paymentfile: paymentFile,
-        paymentnote: paymentNote,
-        status: status,
-        username: username,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        return queryResult;
-    }
-
-    return null;
-}
-
-const changeInvoiceStatus = async (corpId, orgId, invoiceId, status, username, requestId) => {
-    const queryString = "UFN_INVOICE_CHANGEINVOICESTATUS";
-    const queryParameters = {
-        corpid: corpId,
-        invoiceid: invoiceId,
-        orgid: orgId,
-        status: status,
-        username: username,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        return queryResult;
-    }
-
-    return null;
-}
-
-const createBalance = async (corpId, orgId, communicationChannelId, description, status, type, module, receiver, amount, balance, documentType, documentNumber, paymentStatus, transactionDate, transactionUser, username, requestId) => {
-    const queryString = "UFN_BALANCE_INS_PAYMENT";
-    const queryParameters = {
-        amount: amount,
-        balance: balance,
-        communicationchannelid: communicationChannelId,
-        corpid: corpId,
-        description: description,
-        documentnumber: documentNumber,
-        documenttype: documentType,
-        module: module,
-        orgid: orgId,
-        paymentstatus: paymentStatus,
-        receiver: receiver,
-        status: status,
-        transactiondate: transactionDate,
-        transactionuser: transactionUser,
-        type: type,
-        username: username,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0]
-        }
-    }
-
-    return null;
-}
 
 const createCharge = async (userProfile, settings, token, metadata, privateKey) => {
     const culqiService = new Culqi({
@@ -131,598 +17,21 @@ const createCharge = async (userProfile, settings, token, metadata, privateKey) 
     var culqiBody = {
         amount: `${settings.amount}`,
         antifraud_details: {
-            address: `${(removeSpecialCharacter(userProfile.address || 'EMPTY')).slice(0, 100)}`,
-            address_city: `${(removeSpecialCharacter(userProfile.address_city || 'EMPTY')).slice(0, 30)}`,
-            country_code: `${((userProfile.country || token.client.ip_country_code) || 'PE')}`,
-            first_name: `${(removeSpecialCharacter(userProfile.firstname || 'EMPTY')).slice(0, 50)}`,
-            last_name: `${(removeSpecialCharacter(userProfile.lastname || 'EMPTY')).slice(0, 50)}`,
-            phone_number: `${(userProfile.phone ? userProfile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
+            address: `${(genericfunctions.removeSpecialCharacter(userProfile.address || "EMPTY")).slice(0, 100)}`,
+            address_city: `${(genericfunctions.removeSpecialCharacter(userProfile.address_city || "EMPTY")).slice(0, 30)}`,
+            country_code: `${((userProfile.country || token.client.ip_country_code) || "PE")}`,
+            first_name: `${(genericfunctions.removeSpecialCharacter(userProfile.firstname || "EMPTY")).slice(0, 50)}`,
+            last_name: `${(genericfunctions.removeSpecialCharacter(userProfile.lastname || "EMPTY")).slice(0, 50)}`,
+            phone_number: `${(userProfile.phone ? userProfile.phone.replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
         },
         currency_code: `${settings.currency}`,
-        description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
+        description: `${(genericfunctions.removeSpecialCharacter(settings.description || "").replace(/[^0-9A-Za-z ]/g, "")).slice(0, 80)}`,
         email: `${token.email.slice(0, 50)}`,
         metadata: metadata,
         source_id: `${token.id}`,
     }
 
     return await culqiService.charges.createCharge(culqiBody);
-}
-
-const createInvoice = async (corpId, orgId, invoiceId, description, status, type, issuerRuc, issuerBusinessName, issuerTradeName, issuerFiscalAddress, issuerUbigeo, emitterType, annexCode, printingFormat, xmlVersion, ublVersion, receiverDocType, receiverDocNum, receiverBusinessName, receiverFiscalAddress, receiverCountry, receiverMail, invoiceType, sunatOpeCode, serie, correlative, concept, invoiceDate, expirationDate, subtotal, taxes, totalAmount, currency, exchangeRate, invoiceStatus, fileNumber, purchaseOrder, executingUnitCode, selectionProcessNumber, contractNumber, comments, creditType, creditNoteType, creditNoteMotive, creditNoteDiscount, invoiceReferenceFile, invoicePaymentNote, username, referenceInvoiceId, netAmount, paymentStatus, hasReport, year, month, paymentMethod, requestId) => {
-    const queryString = "UFN_INVOICE_INS";
-    const queryParameters = {
-        annexcode: annexCode,
-        comments: comments,
-        concept: concept,
-        contractnumber: contractNumber,
-        corpid: corpId,
-        correlative: correlative,
-        creditnotediscount: creditNoteDiscount,
-        creditnotemotive: creditNoteMotive,
-        creditnotetype: creditNoteType,
-        credittype: creditType,
-        currency: currency,
-        description: description,
-        emittertype: emitterType,
-        exchangerate: exchangeRate,
-        executingunitcode: executingUnitCode,
-        expirationdate: expirationDate,
-        filenumber: fileNumber,
-        hasreport: hasReport,
-        invoicedate: invoiceDate,
-        invoiceid: invoiceId,
-        invoicepaymentnote: invoicePaymentNote,
-        invoicereferencefile: invoiceReferenceFile,
-        invoicestatus: invoiceStatus,
-        invoicetype: invoiceType,
-        issuerbusinessname: issuerBusinessName,
-        issuerfiscaladdress: issuerFiscalAddress,
-        issuerruc: issuerRuc,
-        issuertradename: issuerTradeName,
-        issuerubigeo: issuerUbigeo,
-        month: month,
-        netamount: netAmount,
-        orgid: orgId,
-        paymentmethod: paymentMethod,
-        paymentstatus: paymentStatus,
-        printingformat: printingFormat,
-        purchaseorder: purchaseOrder,
-        receiverbusinessname: receiverBusinessName,
-        receivercountry: receiverCountry,
-        receiverdocnum: receiverDocNum,
-        receiverdoctype: receiverDocType,
-        receiverfiscaladdress: receiverFiscalAddress,
-        receivermail: receiverMail,
-        referenceinvoiceid: referenceInvoiceId,
-        selectionprocessnumber: selectionProcessNumber,
-        serie: serie,
-        status: status,
-        subtotal: subtotal,
-        sunatopecode: sunatOpeCode,
-        taxes: taxes,
-        totalamount: totalAmount,
-        type: type,
-        ublversion: ublVersion,
-        username: username,
-        xmlversion: xmlVersion,
-        year: year,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const createInvoiceDetail = async (corpId, orgId, invoiceId, description, status, type, quantity, productCode, hasIgv, saleType, igvTribute, measureUnit, totalIgv, totalAmount, igvRate, productPrice, productDescription, productNetPrice, productNetWorth, netAmount, username, requestId) => {
-    const queryString = "UFN_INVOICEDETAIL_INS";
-    const queryParameters = {
-        corpid: corpId,
-        description: description,
-        hasigv: hasIgv,
-        igvrate: igvRate,
-        igvtribute: igvTribute,
-        invoiceid: invoiceId,
-        measureunit: measureUnit,
-        netamount: netAmount,
-        orgid: orgId,
-        productcode: productCode,
-        productdescription: productDescription,
-        productnetprice: productNetPrice,
-        productnetworth: productNetWorth,
-        productprice: productPrice,
-        quantity: quantity,
-        saletype: saleType,
-        status: status,
-        totalamount: totalAmount,
-        totaligv: totalIgv,
-        type: type,
-        username: username,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        return queryResult;
-    }
-
-    return null;
-}
-
-const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstName, lastName, mail, favorite, clientCode, status, phone, type, username, requestId) => {
-    const queryString = "UFN_PAYMENTCARD_INS";
-    const queryParameters = {
-        cardcode: cardCode,
-        cardnumber: cardNumber,
-        clientcode: clientCode,
-        corpid: corpId,
-        favorite: favorite,
-        firstname: firstName,
-        id: id,
-        lastname: lastName,
-        mail: mail,
-        operation: id ? "UPDATE" : "INSERT",
-        orgid: orgId,
-        status: status,
-        phone: phone,
-        type: type,
-        username: username,
-        _requestid: requestId,
-    }
-
-    return await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-}
-
-const deleteInvoiceDetail = async (corpId, orgId, invoiceId, requestId) => {
-    const queryString = "UFN_INVOICEDETAIL_DELETE";
-    const queryParameters = {
-        corpid: corpId,
-        invoiceid: invoiceId,
-        orgid: orgId,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        return queryResult;
-    }
-
-    return null;
-}
-
-const favoritePaymentCard = async (corpId, requestId) => {
-    const queryString = "UFN_PAYMENTCARD_LST";
-    const queryParameters = {
-        corpid: corpId,
-        id: 0,
-        orgid: 0,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            var favoriteCard = queryResult.find(card => card.favorite === true);
-
-            if (favoriteCard) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-const getAppSettingSingle = async (corpid, orgid, requestId) => {
-    const queryString = "UFN_APPSETTING_INVOICE_SEL_SINGLE";
-    const queryParameters = {
-        corpid: corpid,
-        orgid: orgid,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const getCharge = async (corpId, orgId, userId, id, requestId) => {
-    const queryString = "UFN_CHARGE_SEL";
-    const queryParameters = {
-        corpid: corpId,
-        invoiceid: id,
-        orgid: orgId,
-        userid: userId,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const getCorporation = async (corpId, requestId) => {
-    const queryString = "UFN_CORP_SEL";
-    const queryParameters = {
-        all: false,
-        corpid: corpId,
-        id: corpId,
-        orgid: 0,
-        username: 'admin',
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const getCorrelative = async (corpId, orgId, id, type, requestId) => {
-    var queryString = null;
-    const queryParameters = {
-        corpid: corpId,
-        invoiceid: id,
-        orgid: orgId,
-        _requestid: requestId,
-    }
-
-    switch (type) {
-        case 'INVOICE':
-            queryString = 'UFN_INVOICE_CORRELATIVE';
-            break;
-        case 'INVOICEERROR':
-            queryString = 'UFN_INVOICE_CORRELATIVEERROR';
-            break;
-        case 'TICKET':
-            queryString = 'UFN_INVOICE_TICKETCORRELATIVE';
-            break;
-        case 'TICKETERROR':
-            queryString = 'UFN_INVOICE_TICKETCORRELATIVEERROR';
-            break;
-        case 'CREDITINVOICE':
-            queryString = 'UFN_INVOICECREDIT_CORRELATIVE';
-            break;
-        case 'CREDITINVOICEERROR':
-            queryString = 'UFN_INVOICECREDIT_CORRELATIVEERROR';
-            break;
-        case 'CREDITTICKET':
-            queryString = 'UFN_INVOICECREDIT_TICKETCREDITCORRELATIVE';
-            break;
-        case 'CREDITTICKETERROR':
-            queryString = 'UFN_INVOICECREDIT_TICKETCREDITCORRELATIVEERROR';
-            break;
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-async function sleep(msec) {
-    return new Promise(resolve => setTimeout(resolve, msec));
-}
-
-const getInvoice = async (corpId, orgId, userId, id, requestId) => {
-    const queryString = "UFN_INVOICE_SELBYID";
-    const queryParameters = {
-        corpid: corpId,
-        invoiceid: id,
-        orgid: orgId,
-        userid: userId,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const getInvoiceDetail = async (corpId, orgId, userId, id, requestId) => {
-    const queryString = "UFN_INVOICEDETAIL_SELBYINVOICEID";
-    const queryParameters = {
-        corpid: corpId,
-        invoiceid: id,
-        orgid: orgId,
-        userid: userId,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult;
-        }
-    }
-
-    return null
-}
-
-const getOrganization = async (corpId, orgId, requestId) => {
-    if (orgId) {
-        const queryString = "UFN_ORG_SEL";
-        const queryParameters = {
-            all: false,
-            corpid: corpId,
-            id: orgId,
-            orgid: orgId,
-            username: 'admin',
-            _requestid: requestId,
-        }
-
-        const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-        if (queryResult instanceof Array) {
-            if (queryResult.length > 0) {
-                return queryResult[0];
-            }
-        }
-    }
-
-    return null;
-}
-
-const getPaymentCard = async (corpId, id, requestId) => {
-    const queryString = "UFN_PAYMENTCARD_LST";
-    const queryParameters = {
-        corpid: corpId,
-        id: id,
-        orgid: 0,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            if (id === 0) {
-                return queryResult;
-            }
-            else {
-                return queryResult[0];
-            }
-        }
-    }
-
-    return null;
-}
-
-const getProfile = async (userId, requestId) => {
-    const queryString = "UFN_PROFILE_SEL";
-    const queryParameters = {
-        userid: userId,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const invoiceSunat = async (corpId, orgId, invoiceId, status, error, qrCode, hashCode, urlCdr, urlPdf, urlXml, serie, issuerRuc, issuerBusinessName, issuerTradeName, issuerFiscalAddress, issuerUbigeo, emitterType, annexCode, printingFormat, sendToSunat, returnPdf, returnXmlSunat, returnXml, token, sunatUrl, sunatUsername, xmlVersion, ublVersion, receiverDocType, receiverDocNum, receiverBusinessName, receiverFiscalAddress, receiverCountry, receiverMail, invoiceType, sunatOpeCode, expirationDate, purchaseOrder, comments, creditType, detractionCode, detraction, detractionAccount, invoiceDate, location, invoiceProvider, correlative, requestId) => {
-    const queryString = "UFN_INVOICE_SUNAT";
-    const queryParameters = {
-        annexcode: annexCode,
-        comments: comments,
-        correlative: correlative,
-        corpid: corpId,
-        credittype: creditType,
-        detraction: detraction,
-        detractionaccount: detractionAccount,
-        detractioncode: detractionCode,
-        emittertype: emitterType,
-        error: error,
-        expirationdate: expirationDate,
-        hashcode: hashCode,
-        invoicedate: invoiceDate,
-        invoiceid: invoiceId,
-        invoiceprovider: invoiceProvider,
-        invoicetype: invoiceType,
-        issuerbusinessname: issuerBusinessName,
-        issuerfiscaladdress: issuerFiscalAddress,
-        issuerruc: issuerRuc,
-        issuertradename: issuerTradeName,
-        issuerubigeo: issuerUbigeo,
-        location: location,
-        orgid: orgId,
-        printingformat: printingFormat,
-        purchaseorder: purchaseOrder,
-        qrcode: qrCode,
-        receiverbusinessname: receiverBusinessName,
-        receivercountry: receiverCountry,
-        receiverdocnum: receiverDocNum,
-        receiverdoctype: receiverDocType,
-        receiverfiscaladdress: receiverFiscalAddress,
-        receivermail: receiverMail,
-        returnpdf: returnPdf,
-        returnxml: returnXml,
-        returnxmlsunat: returnXmlSunat,
-        sendtosunat: sendToSunat,
-        serie: serie,
-        status: status,
-        sunatopecode: sunatOpeCode,
-        sunaturl: sunatUrl,
-        sunatusername: sunatUsername,
-        token: token,
-        ublversion: ublVersion,
-        urlcdr: urlCdr,
-        urlpdf: urlPdf,
-        urlxml: urlXml,
-        xmlversion: xmlVersion,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, chargeJson, chargeToken, currency, description, email, operation, orderId, orderJson, paidBy, status, tokenId, tokenJson, type, requestId) => {
-    const queryString = "UFN_CHARGE_INS";
-    const queryParameters = {
-        amount: amount,
-        capture: capture,
-        chargejson: chargeJson,
-        chargetoken: chargeToken,
-        corpid: corpId,
-        currency: currency,
-        description: description,
-        email: email,
-        id: id,
-        invoiceid: invoiceId,
-        operation: operation,
-        orderid: orderId,
-        orderjson: orderJson,
-        orgid: orgId,
-        paidby: paidBy,
-        status: status,
-        tokenid: tokenId,
-        tokenjson: tokenJson,
-        type: type,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const insertPayment = async (corpId, orgId, invoiceId, capture, chargeId, chargeJson, chargeToken, culqiAmount, email, paidBy, tokenId, tokenJson, location, paymentProvider, requestId) => {
-    const queryString = "UFN_INVOICE_PAYMENT";
-    const queryParameters = {
-        capture: capture,
-        chargeid: chargeId,
-        chargejson: chargeJson,
-        chargetoken: chargeToken,
-        corpid: corpId,
-        culqiamount: culqiAmount,
-        email: email,
-        invoiceid: invoiceId,
-        location: location,
-        orgid: orgId,
-        paidby: paidBy,
-        paymentprovider: paymentProvider,
-        tokenid: tokenId,
-        tokenjson: tokenJson,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        return queryResult;
-    }
-
-    return null;
-}
-
-const searchDomain = async (corpId, orgId, all, domainName, username, requestId) => {
-    const queryString = "UFN_DOMAIN_VALUES_SEL";
-    const queryParameters = {
-        all: all,
-        corpid: corpId,
-        domainname: domainName,
-        orgid: orgId,
-        username: username,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const padNumber = (number, places) => String(number).padStart(places, '0');
-
-const removeSpecialCharacter = (text) => {
-    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-const getCulqiError = (culqiResponse) => {
-    var culqiMessage;
-
-    try {
-        if (culqiResponse) {
-            let culqiError = JSON.parse(culqiResponse);
-
-            if (culqiError) {
-                if (culqiError.user_message) {
-                    culqiMessage = culqiError.user_message;
-                }
-
-                if (culqiError.merchant_message) {
-                    culqiMessage = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
-                }
-            }
-        }
-    }
-    catch {
-        culqiMessage = null;
-    }
-
-    return culqiMessage;
 }
 
 exports.automaticPayment = async (request, response) => {
@@ -733,7 +42,7 @@ exports.automaticPayment = async (request, response) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                responsedata = genericfunctions.changeResponseData(responsedata, 401, null, 'error_auth_error', 401, false);
+                responsedata = genericfunctions.changeResponseData(responsedata, 401, null, "error_auth_error", 401, false);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
@@ -741,10 +50,10 @@ exports.automaticPayment = async (request, response) => {
         if (request.body) {
             const { corpid, orgid, invoiceid } = request.body;
 
-            const corp = await getCorporation(corpid, responsedata.id);
+            const corp = await genericfunctions.getCorporation(corpid, responsedata.id);
 
             if (corp) {
-                const org = (orgid === 0 ? null : await getOrganization(corpid, orgid, responsedata.id));
+                const org = (orgid === 0 ? null : await genericfunctions.getOrganization(corpid, orgid, responsedata.id));
 
                 if (org || orgid === 0) {
                     var paymentdisabled = false;
@@ -761,23 +70,23 @@ exports.automaticPayment = async (request, response) => {
                     }
 
                     if (paymentdisabled) {
-                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentdisabled', 200, true);
+                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, "success_automaticpayment_paymentdisabled", 200, true);
                         return response.status(responsedata.status).json(responsedata);
                     }
 
-                    const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+                    const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
                     if (appsetting) {
-                        const invoice = await getInvoice(corpid, orgid, 0, invoiceid, responsedata.id);
+                        const invoice = await genericfunctions.getInvoice(corpid, orgid, 0, invoiceid, responsedata.id);
 
                         if (invoice) {
-                            if (invoice.paymentstatus === 'PENDING') {
-                                var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+                            if (invoice.paymentstatus === "PENDING") {
+                                var exchangeratedata = await genericfunctions.getExchangeRate(invoice.currency, responsedata.id);
 
                                 var paymentsuccess = false;
                                 var paymenttype = null;
 
-                                const paymentcard = await getPaymentCard(corpid, 0, responsedata.id);
+                                const paymentcard = await genericfunctions.getPaymentCard(corpid, 0, responsedata.id);
 
                                 if (paymentcard) {
                                     var favoritecard = paymentcard.find((card) => card.favorite === true);
@@ -785,17 +94,17 @@ exports.automaticPayment = async (request, response) => {
                                     if (favoritecard) {
                                         var metadata = {};
 
-                                        metadata.businessname = removeSpecialCharacter((org ? org.businessname : corp.businessname) || '');
-                                        metadata.corpid = (corpid || '');
-                                        metadata.corporation = removeSpecialCharacter(corp.description || '');
-                                        metadata.document = ((org ? org.docnum : corp.docnum) || '');
-                                        metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
-                                        metadata.invoiceid = (invoiceid || '');
-                                        metadata.organization = removeSpecialCharacter(invoice.orgdesc || '');
-                                        metadata.orgid = (orgid || '');
-                                        metadata.reference = removeSpecialCharacter(invoice.description || '');
-                                        metadata.seriecode = '';
-                                        metadata.user = 'SCHEDULER';
+                                        metadata.businessname = genericfunctions.removeSpecialCharacter((org ? org.businessname : corp.businessname) || "");
+                                        metadata.corpid = (corpid || "");
+                                        metadata.corporation = genericfunctions.removeSpecialCharacter(corp.description || "");
+                                        metadata.document = ((org ? org.docnum : corp.docnum) || "");
+                                        metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0] || "");
+                                        metadata.invoiceid = (invoiceid || "");
+                                        metadata.organization = genericfunctions.removeSpecialCharacter(invoice.orgdesc || "");
+                                        metadata.orgid = (orgid || "");
+                                        metadata.reference = genericfunctions.removeSpecialCharacter(invoice.description || "");
+                                        metadata.seriecode = "";
+                                        metadata.user = "SCHEDULER";
 
                                         var country = (org ? org.sunatcountry : corp.sunatcountry);
                                         var culqiamount = invoice.totalamount;
@@ -804,10 +113,10 @@ exports.automaticPayment = async (request, response) => {
 
                                         if (exchangeratedata) {
                                             if (country && doctype) {
-                                                if (country === 'PE' && doctype === '6') {
+                                                if (country === "PE" && doctype === "6") {
                                                     var compareamount = (culqiamount || 0);
 
-                                                    if (invoice.currency !== 'PEN') {
+                                                    if (invoice.currency !== "PEN") {
                                                         compareamount = (compareamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
                                                     }
 
@@ -825,13 +134,13 @@ exports.automaticPayment = async (request, response) => {
 
                                                 var chargesuccess = false;
 
-                                                if (appsetting?.paymentprovider === 'CULQI') {
+                                                if (appsetting?.paymentprovider === "CULQI") {
                                                     const requestCulqiCharge = await axiosObservable({
                                                         data: {
                                                             amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
                                                             bearer: appsetting.privatekey,
                                                             currencyCode: invoice.currency,
-                                                            description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                            description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (invoice.description || ""))).slice(0, 80),
                                                             email: favoritecard.mail,
                                                             metadata: metadata,
                                                             operation: "CREATE",
@@ -844,13 +153,13 @@ exports.automaticPayment = async (request, response) => {
                                                     });
 
                                                     if (requestCulqiCharge.data.success) {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, "success_automaticpayment_paymentsuccess", 200, true);
 
                                                         paymentsuccess = true;
 
-                                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                        const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, "INSERT", null, null, "SCHEDULER", "PAID", favoritecard.paymentcardid, null, "REGISTEREDCARD", responsedata.id);
 
-                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                                        const invoicepayment = await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, "SCHEDULER", favoritecard.paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                                         if (invoicepayment) {
                                                             chargesuccess = true;
@@ -858,17 +167,17 @@ exports.automaticPayment = async (request, response) => {
                                                             paymenttype = requestCulqiCharge?.data?.result?.source?.iin?.card_type;
                                                         }
                                                         else {
-                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "alert_automaticpayment_invoiceupdate", responsedata.status, responsedata.success);
                                                         }
                                                     }
                                                 }
-                                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                                else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                                                     const requestOpenpayCharge = await axiosObservable({
                                                         data: {
                                                             amount: (Math.round(((culqiamount) + Number.EPSILON) * 100) / 100),
                                                             currencyCode: invoice.currency,
                                                             customerId: favoritecard.clientcode,
-                                                            description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                            description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (invoice.description || ""))).slice(0, 80),
                                                             igv: `${((appsetting.igv || 0) * 100)}`,
                                                             merchantId: appsetting.culqiurl,
                                                             operation: "CREATE",
@@ -883,13 +192,13 @@ exports.automaticPayment = async (request, response) => {
                                                     });
 
                                                     if (requestOpenpayCharge.data.success) {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, "success_automaticpayment_paymentsuccess", 200, true);
 
                                                         paymentsuccess = true;
 
-                                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                        const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, "INSERT", null, null, "SCHEDULER", "PAID", favoritecard.paymentcardid, null, "REGISTEREDCARD", responsedata.id);
 
-                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                                        const invoicepayment = await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, culqiamount, favoritecard.mail, "SCHEDULER", favoritecard.paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                                         if (invoicepayment) {
                                                             chargesuccess = true;
@@ -897,14 +206,14 @@ exports.automaticPayment = async (request, response) => {
                                                             paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                                         }
                                                         else {
-                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "alert_automaticpayment_invoiceupdate", responsedata.status, responsedata.success);
                                                         }
                                                     }
                                                 }
 
                                                 if (chargesuccess) {
-                                                    const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTBODY', 'SCHEDULER', responsedata.id);
-                                                    const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTSUBJECT', 'SCHEDULER', responsedata.id);
+                                                    const alertbody = await genericfunctions.searchDomain(1, 0, false, "PAYMENTALERTBODY", "SCHEDULER", responsedata.id);
+                                                    const alertsubject = await genericfunctions.searchDomain(1, 0, false, "PAYMENTALERTSUBJECT", "SCHEDULER", responsedata.id);
 
                                                     if (alertbody && alertsubject) {
                                                         var mailbody = alertbody.domainvalue;
@@ -956,12 +265,12 @@ exports.automaticPayment = async (request, response) => {
                                                         }
                                                     }
                                                     else {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_noalertdomain', responsedata.status, responsedata.success);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "alert_automaticpayment_noalertdomain", responsedata.status, responsedata.success);
                                                     }
                                                 }
                                                 else {
-                                                    const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTERRORBODY', 'SCHEDULER', responsedata.id);
-                                                    const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTERRORSUBJECT', 'SCHEDULER', responsedata.id);
+                                                    const alertbody = await genericfunctions.searchDomain(1, 0, false, "PAYMENTALERTERRORBODY", "SCHEDULER", responsedata.id);
+                                                    const alertsubject = await genericfunctions.searchDomain(1, 0, false, "PAYMENTALERTERRORSUBJECT", "SCHEDULER", responsedata.id);
 
                                                     if (alertbody && alertsubject) {
                                                         var mailbody = alertbody.domainvalue;
@@ -1013,27 +322,27 @@ exports.automaticPayment = async (request, response) => {
                                                         }
                                                     }
 
-                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_paymenterror', responsedata.status, responsedata.success);
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_paymenterror", responsedata.status, responsedata.success);
                                                 }
                                             }
                                             else {
-                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nocountry_nodoctype', responsedata.status, responsedata.success);
+                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_nocountry_nodoctype", responsedata.status, responsedata.success);
                                             }
                                         }
                                         else {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_noexchangerate', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_noexchangerate", responsedata.status, responsedata.success);
                                         }
                                     }
                                     else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nofavoritecard', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_nofavoritecard", responsedata.status, responsedata.success);
                                     }
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nopaymentcard', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_nopaymentcard", responsedata.status, responsedata.success);
                                 }
 
-                                if (invoice.invoicestatus !== 'INVOICED' && paymentsuccess) {
-                                    const invoicedetail = await getInvoiceDetail(corpid, orgid, 0, invoiceid, responsedata.id);
+                                if (invoice.invoicestatus !== "INVOICED" && paymentsuccess) {
+                                    const invoicedetail = await genericfunctions.getInvoiceDetail(corpid, orgid, 0, invoiceid, responsedata.id);
                                     var invoicesuccess = false;
 
                                     if (invoicedetail) {
@@ -1041,23 +350,23 @@ exports.automaticPayment = async (request, response) => {
                                         var invoicecorrelative = null;
 
                                         if (org) {
-                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                                documenttype = '03';
+                                            if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKET", responsedata.id);
+                                                documenttype = "03";
                                             }
                                             else {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                                documenttype = '01';
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICE", responsedata.id);
+                                                documenttype = "01";
                                             }
                                         }
                                         else {
-                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                                documenttype = '03';
+                                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKET", responsedata.id);
+                                                documenttype = "03";
                                             }
                                             else {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                                documenttype = '01';
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICE", responsedata.id);
+                                                documenttype = "01";
                                             }
                                         }
 
@@ -1069,19 +378,19 @@ exports.automaticPayment = async (request, response) => {
                                                     CodigoMoneda: invoice.currency,
                                                     CodigoRucReceptor: org ? org.doctype : corp.doctype,
                                                     CodigoUbigeoEmisor: appsetting.ubigeo,
-                                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                                    CorrelativoDocumento: genericfunctions.padNumber(invoicecorrelative.p_correlative, 8),
                                                     DataList: [],
                                                     DireccionFiscalEmisor: appsetting.fiscaladdress,
                                                     DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
                                                     Endpoint: appsetting.sunaturl,
                                                     EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
-                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                    FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0],
+                                                    FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0],
                                                     MailEnvio: org ? org.contactemail : corp.contactemail,
                                                     MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
                                                     NombreComercialEmisor: appsetting.tradename,
                                                     NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
-                                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                    NumeroSerieDocumento: documenttype === "01" ? appsetting.invoiceserie : appsetting.ticketserie,
                                                     PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
                                                     ProductList: [],
                                                     RazonSocialEmisor: appsetting.businessname,
@@ -1090,7 +399,7 @@ exports.automaticPayment = async (request, response) => {
                                                     RetornaXml: appsetting.returnxml,
                                                     RetornaXmlSunat: appsetting.returnxmlsunat,
                                                     RucEmisor: appsetting.ruc,
-                                                    TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                                    TipoCambio: invoice.currency === "PEN" ? "1.000" : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                                     TipoDocumento: documenttype,
                                                     TipoRucEmisor: appsetting.emittertype,
                                                     Token: appsetting.token,
@@ -1100,34 +409,34 @@ exports.automaticPayment = async (request, response) => {
                                                 }
 
                                                 if (org) {
-                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = org.sunatcountry === "PE" ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalIgv = org.sunatcountry === "PE" ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === "PE" ? "0" : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
                                                 }
                                                 else {
-                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === "PE" ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === "PE" ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === "PE" ? "0" : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
                                                 }
 
                                                 var calcdetraction = false;
 
                                                 if (org) {
-                                                    if (org.sunatcountry === 'PE') {
+                                                    if (org.sunatcountry === "PE") {
                                                         calcdetraction = true;
                                                     }
                                                 }
                                                 else {
-                                                    if (corp.sunatcountry === 'PE') {
+                                                    if (corp.sunatcountry === "PE") {
                                                         calcdetraction = true;
                                                     }
                                                 }
 
                                                 var adicional01 = {
-                                                    CodigoDatoAdicional: '05',
-                                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                    CodigoDatoAdicional: "05",
+                                                    DescripcionDatoAdicional: "FORMA DE PAGO: TRANSFERENCIA"
                                                 }
 
                                                 invoicedata.DataList.push(adicional01);
@@ -1137,8 +446,8 @@ exports.automaticPayment = async (request, response) => {
                                                         var compareamount = 0;
 
                                                         if (appsetting.detractionminimum) {
-                                                            if (invoice.currency !== 'PEN') {
-                                                                var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+                                                            if (invoice.currency !== "PEN") {
+                                                                var exchangeratedata = await genericfunctions.getExchangeRate(invoice.currency, responsedata.id);
 
                                                                 if (exchangeratedata) {
                                                                     compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
@@ -1151,7 +460,7 @@ exports.automaticPayment = async (request, response) => {
 
                                                         if (compareamount > appsetting.detractionminimum) {
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                            invoicedata.CodigoOperacionSunat = '1001';
+                                                            invoicedata.CodigoOperacionSunat = "1001";
                                                             invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                             invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
                                                             invoicedata.MontoTotalInafecto = null;
@@ -1160,8 +469,8 @@ exports.automaticPayment = async (request, response) => {
                                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                             var adicional02 = {
-                                                                CodigoDatoAdicional: '06',
-                                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount,
+                                                                CodigoDatoAdicional: "06",
+                                                                DescripcionDatoAdicional: "CUENTA DE DETRACCION: " + appsetting.detractionaccount,
                                                             }
 
                                                             invoicedata.DataList.push(adicional02);
@@ -1185,20 +494,20 @@ exports.automaticPayment = async (request, response) => {
                                                     };
 
                                                     if (org) {
-                                                        invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                                        invoicedetaildata.AfectadoIgv = org.sunatcountry === "PE" ? "10" : "40";
+                                                        invoicedetaildata.TributoIgv = org.sunatcountry === "PE" ? "1000" : "9998";
                                                     }
                                                     else {
-                                                        invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                                        invoicedetaildata.AfectadoIgv = corp.sunatcountry === "PE" ? "10" : "40";
+                                                        invoicedetaildata.TributoIgv = corp.sunatcountry === "PE" ? "1000" : "9998";
                                                     }
 
                                                     invoicedata.ProductList.push(invoicedetaildata);
                                                 });
 
                                                 var adicional05 = {
-                                                    CodigoDatoAdicional: '01',
-                                                    DescripcionDatoAdicional: 'AL CONTADO',
+                                                    CodigoDatoAdicional: "01",
+                                                    DescripcionDatoAdicional: "AL CONTADO",
                                                 }
 
                                                 invoicedata.DataList.push(adicional05);
@@ -1207,10 +516,10 @@ exports.automaticPayment = async (request, response) => {
                                                     invoicedata.FechaVencimiento = null;
                                                 }
 
-                                                if (appsetting?.invoiceprovider === 'MIFACT') {
+                                                if (appsetting?.invoiceprovider === "MIFACT") {
                                                     const requestSendToSunat = await axiosObservable({
                                                         data: invoicedata,
-                                                        method: 'post',
+                                                        method: "post",
                                                         url: `${bridgeEndpoint}processmifact/sendinvoice`,
                                                         _requestid: responsedata.id,
                                                     });
@@ -1218,45 +527,45 @@ exports.automaticPayment = async (request, response) => {
                                                     if (requestSendToSunat.data.result) {
                                                         invoicesuccess = true;
 
-                                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "INVOICED", null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                         const requestSendMail = await axiosObservable({
                                                             data: invoicedata,
-                                                            method: 'post',
+                                                            method: "post",
                                                             url: `${bridgeEndpoint}processmifact/sendmailinvoice`,
                                                             _requestid: responsedata.id,
                                                         });
 
                                                         if (!requestSendMail.data.result) {
-                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticinvoice_mailalert', responsedata.status, responsedata.success);
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "alert_automaticinvoice_mailalert", responsedata.status, responsedata.success);
                                                         }
                                                     }
                                                     else {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_invoiceerror', responsedata.status, responsedata.success);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticinvoice_invoiceerror", responsedata.status, responsedata.success);
 
-                                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                         if (org) {
-                                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                         else {
-                                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                     }
                                                 }
-                                                else if (appsetting?.invoiceprovider === 'SIIGO') {
+                                                else if (appsetting?.invoiceprovider === "SIIGO") {
                                                     invoicedata.TipoDocumentoSiigo = "FV";
-                                                    invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
+                                                    invoicedata.TipoCambio = invoice.currency === "COP" ? "1.000" : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                                     invoicedata.TipoPago = (paymenttype == "Crédito" || paymenttype == "credit") ? "Tarjeta Crédito" : "Tarjeta Débito";
                                                     invoicedata.CityCountry = org ? org.countrycode : corp.countrycode;
                                                     invoicedata.CityState = org ? org.statecode : corp.statecode;
@@ -1264,7 +573,7 @@ exports.automaticPayment = async (request, response) => {
 
                                                     const requestSendToSiigo = await axiosObservable({
                                                         data: invoicedata,
-                                                        method: 'post',
+                                                        method: "post",
                                                         url: `${bridgeEndpoint}processsiigo/sendinvoice`,
                                                         _requestid: responsedata.id,
                                                     });
@@ -1280,38 +589,38 @@ exports.automaticPayment = async (request, response) => {
                                                             correlativeOverride = parseInt(`${requestSendToSiigo.data.result.correlativoCpe}`);
                                                         }
 
-                                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "INVOICED", null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
 
                                                         const requestSendMail = await axiosObservable({
                                                             data: invoicedata,
-                                                            method: 'post',
+                                                            method: "post",
                                                             url: `${bridgeEndpoint}processsiigo/sendmailinvoice`,
                                                             _requestid: responsedata.id,
                                                         });
 
                                                         if (!requestSendMail.data.success) {
-                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticinvoice_mailalert', responsedata.status, responsedata.success);
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "alert_automaticinvoice_mailalert", responsedata.status, responsedata.success);
                                                         }
                                                     }
                                                     else {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_invoiceerror', responsedata.status, responsedata.success);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticinvoice_invoiceerror", responsedata.status, responsedata.success);
 
-                                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                         if (org) {
-                                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                         else {
-                                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                     }
@@ -1320,41 +629,41 @@ exports.automaticPayment = async (request, response) => {
                                             catch (exception) {
                                                 printException(exception, request.originalUrl, responsedata.id);
 
-                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_exception', responsedata.status, responsedata.success);
+                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticinvoice_exception", responsedata.status, responsedata.success);
 
-                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                 if (org) {
-                                                    if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                    if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                     }
                                                     else {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                     }
                                                 }
                                                 else {
-                                                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                    if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                     }
                                                     else {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                     }
                                                 }
                                             }
                                         }
                                         else {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_nocorrelative', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticinvoice_nocorrelative", responsedata.status, responsedata.success);
 
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", "Correlative not found", null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
                                         }
                                     }
                                     else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_noinvoicedetail', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticinvoice_noinvoicedetail", responsedata.status, responsedata.success);
                                     }
 
                                     if (!invoicesuccess) {
-                                        const alertbody = await searchDomain(1, 0, false, 'INVOICEALERTERRORBODY', 'SCHEDULER', responsedata.id);
-                                        const alertsubject = await searchDomain(1, 0, false, 'INVOICEALERTERRORSUBJECT', 'SCHEDULER', responsedata.id);
+                                        const alertbody = await genericfunctions.searchDomain(1, 0, false, "INVOICEALERTERRORBODY", "SCHEDULER", responsedata.id);
+                                        const alertsubject = await genericfunctions.searchDomain(1, 0, false, "INVOICEALERTERRORSUBJECT", "SCHEDULER", responsedata.id);
 
                                         if (alertbody && alertsubject) {
                                             var mailbody = alertbody.domainvalue;
@@ -1409,23 +718,23 @@ exports.automaticPayment = async (request, response) => {
                                 }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_alreadypaid', 200, true);
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, null, "success_automaticpayment_alreadypaid", 200, true);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_noinvoice', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_noinvoice", responsedata.status, responsedata.success);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_noappsetting', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_noappsetting", responsedata.status, responsedata.success);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_noorg', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_noorg", responsedata.status, responsedata.success);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nocorp', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_automaticpayment_nocorp", responsedata.status, responsedata.success);
             }
         }
 
@@ -1447,7 +756,7 @@ exports.cardCreate = async (request, response) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                responsedata = genericfunctions.changeResponseData(responsedata, 401, null, 'error_auth_error', 401, false);
+                responsedata = genericfunctions.changeResponseData(responsedata, 401, null, "error_auth_error", 401, false);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
@@ -1456,33 +765,33 @@ exports.cardCreate = async (request, response) => {
             const { firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite, phone } = request.body;
             const { corpid, orgid, userid, usr } = request.user;
 
-            const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+            const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
             if (appsetting) {
-                const corp = await getCorporation(corpid, responsedata.id);
-                const org = await getOrganization(corpid, orgid, responsedata.id);
-                const user = await getProfile(userid, responsedata.id);
+                const corp = await genericfunctions.getCorporation(corpid, responsedata.id);
+                const org = await genericfunctions.getOrganization(corpid, orgid, responsedata.id);
+                const user = await genericfunctions.getProfile(userid, responsedata.id);
 
                 if (user && (corp || org)) {
                     var canRegister = true;
 
                     if (!favorite) {
-                        canRegister = await favoritePaymentCard(corpid, responsedata.id);
+                        canRegister = await genericfunctions.favoritePaymentCard(corpid, responsedata.id);
                     }
 
                     if (canRegister) {
                         var cleancardnumber = cardnumber.split(" ").join("");
 
-                        if (appsetting?.paymentprovider === 'CULQI') {
+                        if (appsetting?.paymentprovider === "CULQI") {
                             const requestCulqiClient = await axiosObservable({
                                 data: {
-                                    address: `${(removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
-                                    addressCity: `${(removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
+                                    address: `${(genericfunctions.removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
+                                    addressCity: `${(genericfunctions.removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
                                     bearer: appsetting.privatekey,
                                     countryCode: `${(user.country || "PE")}`,
                                     email: `${(mail || "generic@mail.com")}`,
-                                    firstName: `${(removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
-                                    lastName: `${(removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                    firstName: `${(genericfunctions.removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                    lastName: `${(genericfunctions.removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
                                     operation: "CREATE",
                                     phoneNumber: `${((phone || user.phone) ? (phone || user.phone).replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
                                     url: appsetting.culqiurlclient,
@@ -1515,36 +824,36 @@ exports.cardCreate = async (request, response) => {
                                 if (requestCulqiCard.data.success) {
                                     cardData = requestCulqiCard.data.result;
 
-                                    const queryPaymentCardInsert = await createPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", phone, "", usr, responsedata.id);
+                                    const queryPaymentCardInsert = await genericfunctions.createPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", phone, "", usr, responsedata.id);
 
                                     if (queryPaymentCardInsert instanceof Array) {
                                         responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
                                     }
                                     else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardInsert.code, responsedata.data, 'error_card_insert', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardInsert.code, responsedata.data, "error_card_insert", responsedata.status, responsedata.success);
                                     }
                                 }
                                 else {
-                                    let errorCard = getCulqiError(requestCulqiCard?.data?.operationMessage) || 'error_card_card';
+                                    let errorCard = genericfunctions.getCulqiError(requestCulqiCard?.data?.operationMessage) || "error_card_card";
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                                 }
                             }
                             else {
-                                let errorCard = getCulqiError(requestCulqiClient?.data?.operationMessage) || 'error_card_client';
+                                let errorCard = genericfunctions.getCulqiError(requestCulqiClient?.data?.operationMessage) || "error_card_client";
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                             }
                         }
-                        else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                        else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                             const requestOpenpayClient = await axiosObservable({
                                 data: {
-                                    address: `${(removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
-                                    addressCity: `${(removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
+                                    address: `${(genericfunctions.removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
+                                    addressCity: `${(genericfunctions.removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
                                     countryCode: `${(user.country || "PE")}`,
                                     email: `${(mail || "generic@mail.com")}`,
-                                    firstName: `${(removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
-                                    lastName: `${(removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                    firstName: `${(genericfunctions.removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                    lastName: `${(genericfunctions.removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
                                     merchantId: appsetting.culqiurl,
                                     operation: "CREATE",
                                     phoneNumber: `${((phone || user.phone) ? (phone || user.phone).replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
@@ -1578,38 +887,38 @@ exports.cardCreate = async (request, response) => {
                                 if (requestOpenpayCard.data.success) {
                                     cardData = requestOpenpayCard.data.result;
 
-                                    const queryPaymentCardInsert = await createPaymentCard(corpid, orgid, 0, cardData.cardNumber, cardData.id, firstname, lastname, mail, favorite, requestOpenpayClient.data.result.id, "ACTIVO", phone, "", usr, responsedata.id);
+                                    const queryPaymentCardInsert = await genericfunctions.createPaymentCard(corpid, orgid, 0, cardData.cardNumber, cardData.id, firstname, lastname, mail, favorite, requestOpenpayClient.data.result.id, "ACTIVO", phone, "", usr, responsedata.id);
 
                                     if (queryPaymentCardInsert instanceof Array) {
                                         responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
                                     }
                                     else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardInsert.code, responsedata.data, 'error_card_insert', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardInsert.code, responsedata.data, "error_card_insert", responsedata.status, responsedata.success);
                                     }
                                 }
                                 else {
-                                    let errorCard = requestOpenpayCard?.data?.operationMessage || 'error_card_card';
+                                    let errorCard = requestOpenpayCard?.data?.operationMessage || "error_card_card";
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                                 }
                             }
                             else {
-                                let errorCard = requestOpenpayClient?.data?.operationMessage || 'error_card_client';
+                                let errorCard = requestOpenpayClient?.data?.operationMessage || "error_card_client";
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestOpenpayClient?.data?.operationMessage || errorCard, responsedata.status, responsedata.success);
                             }
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_nofavorite', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_card_nofavorite", responsedata.status, responsedata.success);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_usernotfound', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_card_usernotfound", responsedata.status, responsedata.success);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_configuration', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_card_configuration", responsedata.status, responsedata.success);
             }
         }
 
@@ -1631,7 +940,7 @@ exports.cardDelete = async (request, response) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                responsedata = genericfunctions.changeResponseData(responsedata, 401, null, 'error_auth_error', 401, false);
+                responsedata = genericfunctions.changeResponseData(responsedata, 401, null, "error_auth_error", 401, false);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
@@ -1640,10 +949,10 @@ exports.cardDelete = async (request, response) => {
             const { corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, type, phone } = request.body;
             const { usr } = request.user;
 
-            const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+            const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
             if (appsetting) {
-                if (appsetting?.paymentprovider === 'CULQI') {
+                if (appsetting?.paymentprovider === "CULQI") {
                     const requestCulqiCard = await axiosObservable({
                         data: {
                             bearer: appsetting.privatekey,
@@ -1657,22 +966,22 @@ exports.cardDelete = async (request, response) => {
                     });
 
                     if (requestCulqiCard.data.success) {
-                        const queryPaymentCardUpdate = await createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
+                        const queryPaymentCardUpdate = await genericfunctions.createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
 
                         if (queryPaymentCardUpdate instanceof Array) {
                             responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardUpdate.code, responsedata.data, 'error_card_update', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardUpdate.code, responsedata.data, "error_card_update", responsedata.status, responsedata.success);
                         }
                     }
                     else {
-                        let errorCard = getCulqiError(requestCulqiCard?.data?.operationMessage) || 'error_card_delete';
+                        let errorCard = genericfunctions.getCulqiError(requestCulqiCard?.data?.operationMessage) || "error_card_delete";
 
                         responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                     }
                 }
-                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                     const requestOpenpayCard = await axiosObservable({
                         data: {
                             customerId: clientcode,
@@ -1688,24 +997,24 @@ exports.cardDelete = async (request, response) => {
                     });
 
                     if (requestOpenpayCard.data.success) {
-                        const queryPaymentCardUpdate = await createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
+                        const queryPaymentCardUpdate = await genericfunctions.createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
 
                         if (queryPaymentCardUpdate instanceof Array) {
                             responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardUpdate.code, responsedata.data, 'error_card_update', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardUpdate.code, responsedata.data, "error_card_update", responsedata.status, responsedata.success);
                         }
                     }
                     else {
-                        let errorCard = requestOpenpayCard?.data?.operationMessage || 'error_card_delete';
+                        let errorCard = requestOpenpayCard?.data?.operationMessage || "error_card_delete";
 
                         responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                     }
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_configuration', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error_card_configuration", responsedata.status, responsedata.success);
             }
         }
 
@@ -1730,19 +1039,19 @@ exports.chargeInvoice = async (request, response) => {
 
         if (iscard) {
             if (!paymentcardid || !paymentcardcode) {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete payment card', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete payment card", responsedata.status, responsedata.success);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
 
-        const invoice = await getInvoice(corpid, orgid, userid, invoiceid, responsedata.id);
+        const invoice = await genericfunctions.getInvoice(corpid, orgid, userid, invoiceid, responsedata.id);
 
         if (invoice) {
             if (invoice.invoicestatus !== "INVOICED") {
-                const corp = await getCorporation(corpid, responsedata.id);
-                const org = await getOrganization(corpid, orgid, responsedata.id);
+                const corp = await genericfunctions.getCorporation(corpid, responsedata.id);
+                const org = await genericfunctions.getOrganization(corpid, orgid, responsedata.id);
 
-                const tipocredito = '0';
+                const tipocredito = "0";
 
                 var correctcorrelative = false;
                 var proceedpayment = false;
@@ -1752,7 +1061,7 @@ exports.chargeInvoice = async (request, response) => {
                     if (corp.billbyorg) {
                         if (org) {
                             if (org.docnum && org.doctype && org.businessname && org.fiscaladdress && org.sunatcountry) {
-                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
                                     correctcorrelative = true;
                                 }
                                 else {
@@ -1763,23 +1072,23 @@ exports.chargeInvoice = async (request, response) => {
                                     proceedpayment = true;
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlative not found', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlative not found", responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete organization', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete organization", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete organization', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete organization", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
                         if (corp.docnum && corp.doctype && corp.businessname && corp.fiscaladdress && corp.sunatcountry) {
-                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
                                 correctcorrelative = true;
                             }
                             else {
@@ -1790,50 +1099,50 @@ exports.chargeInvoice = async (request, response) => {
                                 proceedpayment = true;
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlative not found', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlative not found", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete corporation', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete corporation", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
 
                     if (proceedpayment) {
-                        const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid, responsedata.id);
+                        const invoicedetail = await genericfunctions.getInvoiceDetail(corpid, orgid, userid, invoiceid, responsedata.id);
 
                         if (invoicedetail) {
-                            if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override)) {
-                                const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+                            if (invoice.invoicestatus === "DRAFT" && invoice.paymentstatus === "PENDING" && invoice.currency === settings.currency && (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override)) {
+                                const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
                                 if (appsetting) {
-                                    const userprofile = await getProfile(userid, responsedata.id);
+                                    const userprofile = await genericfunctions.getProfile(userid, responsedata.id);
 
                                     if (userprofile) {
-                                        metadata.corpid = (corpid || '');
-                                        metadata.corporation = removeSpecialCharacter(corp.description || '');
-                                        metadata.orgid = (orgid || '');
-                                        metadata.organization = removeSpecialCharacter(invoice.orgdesc || '');
-                                        metadata.document = ((org ? org.docnum : corp.docnum) || '');
-                                        metadata.businessname = removeSpecialCharacter((org ? org.businessname : corp.businessname) || '');
-                                        metadata.invoiceid = (invoiceid || '');
-                                        metadata.seriecode = '';
-                                        metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
-                                        metadata.user = removeSpecialCharacter(usr || '');
-                                        metadata.reference = removeSpecialCharacter(invoice.description || '');
+                                        metadata.corpid = (corpid || "");
+                                        metadata.corporation = genericfunctions.removeSpecialCharacter(corp.description || "");
+                                        metadata.orgid = (orgid || "");
+                                        metadata.organization = genericfunctions.removeSpecialCharacter(invoice.orgdesc || "");
+                                        metadata.document = ((org ? org.docnum : corp.docnum) || "");
+                                        metadata.businessname = genericfunctions.removeSpecialCharacter((org ? org.businessname : corp.businessname) || "");
+                                        metadata.invoiceid = (invoiceid || "");
+                                        metadata.seriecode = "";
+                                        metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0] || "");
+                                        metadata.user = genericfunctions.removeSpecialCharacter(usr || "");
+                                        metadata.reference = genericfunctions.removeSpecialCharacter(invoice.description || "");
 
                                         var successPay = false;
 
                                         if (iscard) {
-                                            const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
+                                            const paymentcard = await genericfunctions.getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                                            if (appsetting?.paymentprovider === 'CULQI') {
+                                            if (appsetting?.paymentprovider === "CULQI") {
                                                 const requestCulqiCharge = await axiosObservable({
                                                     data: {
                                                         amount: settings.amount,
                                                         bearer: appsetting.privatekey,
-                                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                                        description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (settings.description || ""))).slice(0, 80),
                                                         currencyCode: settings.currency,
                                                         email: (paymentcard?.mail || userprofile.email),
                                                         sourceId: paymentcardcode,
@@ -1847,16 +1156,16 @@ exports.chargeInvoice = async (request, response) => {
                                                 });
 
                                                 if (requestCulqiCharge.data.success) {
-                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                    const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), "INSERT", null, null, usr, "PAID", paymentcardid, null, "REGISTEREDCARD", responsedata.id);
 
-                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                                    await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                                     successPay = true;
 
                                                     paymenttype = requestCulqiCharge?.data?.result?.source?.iin?.card_type;
                                                 }
                                                 else {
-                                                    let errorCharge = getCulqiError(requestCulqiCharge?.data?.operationMessage);
+                                                    let errorCharge = genericfunctions.getCulqiError(requestCulqiCharge?.data?.operationMessage);
 
                                                     if (errorCharge) {
                                                         responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
@@ -1864,13 +1173,13 @@ exports.chargeInvoice = async (request, response) => {
                                                     }
                                                 }
                                             }
-                                            else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                            else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                                                 const requestOpenpayCharge = await axiosObservable({
                                                     data: {
                                                         amount: settings.amount,
                                                         currencyCode: settings.currency,
                                                         customerId: paymentcard?.clientcode,
-                                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                                        description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (settings.description || ""))).slice(0, 80),
                                                         igv: `${((appsetting.igv || 0) * 100)}`,
                                                         merchantId: appsetting.culqiurl,
                                                         operation: "CREATE",
@@ -1885,56 +1194,56 @@ exports.chargeInvoice = async (request, response) => {
                                                 });
 
                                                 if (requestOpenpayCharge.data.success) {
-                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                    const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), "INSERT", null, null, usr, "PAID", paymentcardid, null, "REGISTEREDCARD", responsedata.id);
 
-                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                                    await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                                     successPay = true;
 
                                                     paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                                 }
                                                 else {
-                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || "unsuccessful payment";
 
                                                     if (errorCharge) {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge || 'generic_payment_error', responsedata.status, responsedata.success);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge || "generic_payment_error", responsedata.status, responsedata.success);
                                                         return response.status(responsedata.status).json(responsedata);
                                                     }
                                                 }
                                             }
                                         }
                                         else {
-                                            if (appsetting?.paymentprovider === 'CULQI') {
+                                            if (appsetting?.paymentprovider === "CULQI") {
                                                 const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                                                if (charge.object === 'error') {
+                                                if (charge.object === "error") {
                                                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
                                                     return response.status(responsedata.status).json(responsedata);
                                                 }
                                                 else {
-                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, 'CULQI', responsedata.id)
+                                                    const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, "INSERT", null, null, usr, "PAID", token.id, token, "CULQI", responsedata.id)
 
-                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                                    await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                                     successPay = true;
 
                                                     paymenttype = charge?.source?.iin?.card_type;
                                                 }
                                             }
-                                            else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                            else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                                                 const requestOpenpayCharge = await axiosObservable({
                                                     data: {
                                                         amount: settings.amount,
                                                         currencyCode: settings.currency,
-                                                        description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
-                                                        email: (userprofile.email || 'generic@mail.com'),
-                                                        firstName: `${(removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || 'EMPTY')).slice(0, 50)}`,
+                                                        description: `${(genericfunctions.removeSpecialCharacter(settings.description || "").replace(/[^0-9A-Za-z ]/g, "")).slice(0, 80)}`,
+                                                        email: (userprofile.email || "generic@mail.com"),
+                                                        firstName: `${(genericfunctions.removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || "EMPTY")).slice(0, 50)}`,
                                                         igv: `${((appsetting.igv || 0) * 100)}`,
-                                                        lastName: `${(removeSpecialCharacter(userprofile.lastname || 'EMPTY')).slice(0, 50)}`,
+                                                        lastName: `${(genericfunctions.removeSpecialCharacter(userprofile.lastname || "EMPTY")).slice(0, 50)}`,
                                                         merchantId: appsetting.culqiurl,
                                                         operation: "CREATE",
                                                         orderId: `${corpid}-${orgid}-${invoiceid}-${Math.floor(Math.random() * 9999)}`,
-                                                        phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
+                                                        phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
                                                         secretKey: appsetting.privatekey,
                                                         sourceId: transaction?.transactionresponse?.data.id,
                                                         url: appsetting.culqiurlcharge,
@@ -1945,18 +1254,18 @@ exports.chargeInvoice = async (request, response) => {
                                                 });
 
                                                 if (requestOpenpayCharge.data.success) {
-                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, userprofile.email || 'generic@mail.com', 'INSERT', null, null, usr, 'PAID', null, null, 'OPENPAY', responsedata.id)
+                                                    const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, userprofile.email || "generic@mail.com", "INSERT", null, null, usr, "PAID", null, null, "OPENPAY", responsedata.id)
 
-                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), userprofile.email || 'generic@mail.com', usr, null, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                                    await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), userprofile.email || "generic@mail.com", usr, null, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                                     successPay = true;
 
                                                     paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                                 }
                                                 else {
-                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || "unsuccessful payment";
 
-                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge || 'generic_payment_error', responsedata.status, responsedata.success);
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge || "generic_payment_error", responsedata.status, responsedata.success);
                                                     return response.status(responsedata.status).json(responsedata);
                                                 }
                                             }
@@ -1967,29 +1276,29 @@ exports.chargeInvoice = async (request, response) => {
                                             var documenttype = null;
 
                                             if (corp.billbyorg) {
-                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                                    documenttype = '03';
+                                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKET", responsedata.id);
+                                                    documenttype = "03";
                                                 }
                                                 else {
-                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                                    documenttype = '01';
+                                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICE", responsedata.id);
+                                                    documenttype = "01";
                                                 }
                                             }
                                             else {
-                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                                    documenttype = '03';
+                                                if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKET", responsedata.id);
+                                                    documenttype = "03";
                                                 }
                                                 else {
-                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                                    documenttype = '01';
+                                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICE", responsedata.id);
+                                                    documenttype = "01";
                                                 }
                                             }
 
                                             if (invoicecorrelative) {
                                                 try {
-                                                    var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+                                                    var exchangeratedata = await genericfunctions.getExchangeRate(invoice.currency, responsedata.id);
 
                                                     var invoicedata = {
                                                         CodigoAnexoEmisor: appsetting.annexcode,
@@ -2001,20 +1310,20 @@ exports.chargeInvoice = async (request, response) => {
                                                         CodigoRucReceptor: org ? org.doctype : corp.doctype,
                                                         CodigoUbigeoEmisor: appsetting.ubigeo,
                                                         EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
-                                                        FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                        FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0],
                                                         MailEnvio: org ? org.contactemail : corp.contactemail,
                                                         MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
                                                         NombreComercialEmisor: appsetting.tradename,
                                                         RazonSocialEmisor: appsetting.businessname,
                                                         RazonSocialReceptor: org ? org.businessname : corp.businessname,
-                                                        CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                                        CorrelativoDocumento: genericfunctions.padNumber(invoicecorrelative.p_correlative, 8),
                                                         RucEmisor: appsetting.ruc,
                                                         NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
-                                                        NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                        NumeroSerieDocumento: documenttype === "01" ? appsetting.invoiceserie : appsetting.ticketserie,
                                                         RetornaPdf: appsetting.returnpdf,
                                                         RetornaXmlSunat: appsetting.returnxmlsunat,
                                                         RetornaXml: appsetting.returnxml,
-                                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                                        TipoCambio: invoice.currency === "PEN" ? "1.000" : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                                         Token: appsetting.token,
                                                         DireccionFiscalEmisor: appsetting.fiscaladdress,
                                                         DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
@@ -2027,27 +1336,27 @@ exports.chargeInvoice = async (request, response) => {
                                                     }
 
                                                     if (corp.billbyorg) {
-                                                        invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                        invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                        invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                        invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.CodigoOperacionSunat = org.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                        invoicedata.MontoTotalGravado = org.sunatcountry === "PE" ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalInafecto = org.sunatcountry === "PE" ? "0" : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                        invoicedata.MontoTotalIgv = org.sunatcountry === "PE" ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                                     }
                                                     else {
-                                                        invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                        invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                        invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                        invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.CodigoOperacionSunat = corp.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                        invoicedata.MontoTotalGravado = corp.sunatcountry === "PE" ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalInafecto = corp.sunatcountry === "PE" ? "0" : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                        invoicedata.MontoTotalIgv = corp.sunatcountry === "PE" ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                                     }
 
                                                     var calcdetraction = false;
 
                                                     if (corp.billbyorg) {
-                                                        if (org.sunatcountry === 'PE') {
+                                                        if (org.sunatcountry === "PE") {
                                                             calcdetraction = true;
                                                         }
                                                     }
                                                     else {
-                                                        if (corp.sunatcountry === 'PE') {
+                                                        if (corp.sunatcountry === "PE") {
                                                             calcdetraction = true;
                                                         }
                                                     }
@@ -2057,7 +1366,7 @@ exports.chargeInvoice = async (request, response) => {
                                                             var compareamount = 0;
 
                                                             if (appsetting.detractionminimum) {
-                                                                if (invoice.currency !== 'PEN') {
+                                                                if (invoice.currency !== "PEN") {
                                                                     if (exchangeratedata) {
                                                                         compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
                                                                     }
@@ -2069,7 +1378,7 @@ exports.chargeInvoice = async (request, response) => {
 
                                                             if (compareamount > appsetting.detractionminimum) {
                                                                 invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                                invoicedata.CodigoOperacionSunat = '1001';
+                                                                invoicedata.CodigoOperacionSunat = "1001";
                                                                 invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                                 invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
                                                                 invoicedata.MontoTotalInafecto = null;
@@ -2078,8 +1387,8 @@ exports.chargeInvoice = async (request, response) => {
                                                                 invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                                 var adicional02 = {
-                                                                    CodigoDatoAdicional: '06',
-                                                                    DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                                    CodigoDatoAdicional: "06",
+                                                                    DescripcionDatoAdicional: "CUENTA DE DETRACCION: " + appsetting.detractionaccount
                                                                 }
 
                                                                 invoicedata.DataList.push(adicional02);
@@ -2088,11 +1397,11 @@ exports.chargeInvoice = async (request, response) => {
                                                     }
 
                                                     if (tipocredito) {
-                                                        if (tipocredito === '0') {
+                                                        if (tipocredito === "0") {
                                                             invoicedata.FechaVencimiento = invoicedata.FechaEmision;
                                                         }
                                                         else {
-                                                            invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
+                                                            invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0]).getDate() + (Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
                                                         }
                                                     }
 
@@ -2112,27 +1421,27 @@ exports.chargeInvoice = async (request, response) => {
                                                         };
 
                                                         if (corp.billbyorg) {
-                                                            invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
-                                                            invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                                            invoicedetaildata.AfectadoIgv = org.sunatcountry === "PE" ? "10" : "40";
+                                                            invoicedetaildata.TributoIgv = org.sunatcountry === "PE" ? "1000" : "9998";
                                                         }
                                                         else {
-                                                            invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
-                                                            invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                                            invoicedetaildata.AfectadoIgv = corp.sunatcountry === "PE" ? "10" : "40";
+                                                            invoicedetaildata.TributoIgv = corp.sunatcountry === "PE" ? "1000" : "9998";
                                                         }
 
                                                         invoicedata.ProductList.push(invoicedetaildata);
                                                     });
 
                                                     var adicional01 = {
-                                                        CodigoDatoAdicional: '05',
-                                                        DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                        CodigoDatoAdicional: "05",
+                                                        DescripcionDatoAdicional: "FORMA DE PAGO: TRANSFERENCIA"
                                                     }
 
                                                     invoicedata.DataList.push(adicional01);
 
                                                     if (purchaseorder) {
                                                         var adicional03 = {
-                                                            CodigoDatoAdicional: '15',
+                                                            CodigoDatoAdicional: "15",
                                                             DescripcionDatoAdicional: purchaseorder
                                                         }
 
@@ -2141,7 +1450,7 @@ exports.chargeInvoice = async (request, response) => {
 
                                                     if (comments) {
                                                         var adicional04 = {
-                                                            CodigoDatoAdicional: '07',
+                                                            CodigoDatoAdicional: "07",
                                                             DescripcionDatoAdicional: comments
                                                         }
 
@@ -2150,54 +1459,54 @@ exports.chargeInvoice = async (request, response) => {
 
                                                     if (tipocredito) {
                                                         var adicional05 = {
-                                                            CodigoDatoAdicional: '01',
-                                                            DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `CREDITO A ${tipocredito} DIAS`
+                                                            CodigoDatoAdicional: "01",
+                                                            DescripcionDatoAdicional: tipocredito === "0" ? "AL CONTADO" : `CREDITO A ${tipocredito} DIAS`
                                                         }
 
                                                         invoicedata.DataList.push(adicional05);
 
                                                         if (adicional05) {
-                                                            if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                            if (adicional05.DescripcionDatoAdicional === "AL CONTADO") {
                                                                 invoicedata.FechaVencimiento = null;
                                                             }
                                                         }
                                                     }
 
-                                                    if (appsetting?.invoiceprovider === 'MIFACT') {
+                                                    if (appsetting?.invoiceprovider === "MIFACT") {
                                                         const requestSendToSunat = await axiosObservable({
                                                             data: invoicedata,
-                                                            method: 'post',
+                                                            method: "post",
                                                             url: `${bridgeEndpoint}processmifact/sendinvoice`,
                                                             _requestid: responsedata.id,
                                                         });
 
                                                         if (requestSendToSunat.data.result) {
-                                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "INVOICED", null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
                                                         }
                                                         else {
-                                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                             if (corp.billbyorg) {
-                                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                                 }
                                                                 else {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                                 }
                                                             }
                                                             else {
-                                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                                if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                                 }
                                                                 else {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                                 }
                                                             }
                                                         }
                                                     }
-                                                    else if (appsetting?.invoiceprovider === 'SIIGO') {
+                                                    else if (appsetting?.invoiceprovider === "SIIGO") {
                                                         invoicedata.TipoDocumentoSiigo = "FV";
-                                                        invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
+                                                        invoicedata.TipoCambio = invoice.currency === "COP" ? "1.000" : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                                         invoicedata.TipoPago = (paymenttype == "Crédito" || paymenttype == "credit") ? "Tarjeta Crédito" : "Tarjeta Débito";
                                                         invoicedata.CityCountry = corp.billbyorg ? org.countrycode : corp.countrycode;
                                                         invoicedata.CityState = corp.billbyorg ? org.statecode : corp.statecode;
@@ -2205,7 +1514,7 @@ exports.chargeInvoice = async (request, response) => {
 
                                                         const requestSendToSiigo = await axiosObservable({
                                                             data: invoicedata,
-                                                            method: 'post',
+                                                            method: "post",
                                                             url: `${bridgeEndpoint}processsiigo/sendinvoice`,
                                                             _requestid: responsedata.id,
                                                         });
@@ -2217,25 +1526,25 @@ exports.chargeInvoice = async (request, response) => {
                                                                 correlativeOverride = parseInt(`${requestSendToSiigo.data.result.correlativoCpe}`);
                                                             }
 
-                                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
+                                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "INVOICED", null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
                                                         }
                                                         else {
-                                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                             if (corp.billbyorg) {
-                                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                                 }
                                                                 else {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                                 }
                                                             }
                                                             else {
-                                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                                if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                                 }
                                                                 else {
-                                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                                 }
                                                             }
                                                         }
@@ -2244,97 +1553,97 @@ exports.chargeInvoice = async (request, response) => {
                                                 catch (exception) {
                                                     printException(exception, request.originalUrl, responsedata.id);
 
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                    await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", exception.message, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                     if (corp.billbyorg) {
-                                                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                        if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                         }
                                                         else {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                         }
                                                     }
                                                     else {
-                                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                        if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                         }
                                                         else {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                         }
                                                     }
                                                 }
                                             }
                                             else {
-                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", "Correlative not found", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
                                             }
 
-                                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'process finished' }, 'culqipaysuccess', 200, true);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: "process finished" }, "culqipaysuccess", 200, true);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                         else {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "unsuccessful payment", responsedata.status, responsedata.success);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
                                     else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid user", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid appsetting', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid appsetting", responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid invoice data', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid invoice data", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoice detail not found', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invoice detail not found", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete payment information', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete payment information", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'corporation not found', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "corporation not found", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
             else {
                 if (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override) {
-                    const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+                    const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
                     if (appsetting) {
-                        const userprofile = await getProfile(userid, responsedata.id);
+                        const userprofile = await genericfunctions.getProfile(userid, responsedata.id);
 
                         if (userprofile) {
-                            metadata.corpid = (corpid || '');
-                            metadata.corporation = removeSpecialCharacter(invoice.corpdesc || '');
-                            metadata.orgid = (orgid || '');
-                            metadata.organization = removeSpecialCharacter(invoice.orgdesc || '');
-                            metadata.document = (invoice.receiverdocnum || '');
-                            metadata.businessname = removeSpecialCharacter(invoice.receiverbusinessname || '');
-                            metadata.invoiceid = (invoiceid || '');
-                            metadata.seriecode = (invoice.serie ? invoice.serie : 'X000') + '-' + (invoice.correlative ? invoice.correlative.toString().padStart(8, '0') : '00000000');
-                            metadata.emissiondate = (invoice.invoicedate || '');
-                            metadata.user = removeSpecialCharacter(usr || '');
-                            metadata.reference = removeSpecialCharacter(invoice.description || '');
+                            metadata.corpid = (corpid || "");
+                            metadata.corporation = genericfunctions.removeSpecialCharacter(invoice.corpdesc || "");
+                            metadata.orgid = (orgid || "");
+                            metadata.organization = genericfunctions.removeSpecialCharacter(invoice.orgdesc || "");
+                            metadata.document = (invoice.receiverdocnum || "");
+                            metadata.businessname = genericfunctions.removeSpecialCharacter(invoice.receiverbusinessname || "");
+                            metadata.invoiceid = (invoiceid || "");
+                            metadata.seriecode = (invoice.serie ? invoice.serie : "X000") + "-" + (invoice.correlative ? invoice.correlative.toString().padStart(8, "0") : "00000000");
+                            metadata.emissiondate = (invoice.invoicedate || "");
+                            metadata.user = genericfunctions.removeSpecialCharacter(usr || "");
+                            metadata.reference = genericfunctions.removeSpecialCharacter(invoice.description || "");
 
                             if (iscard) {
-                                const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
+                                const paymentcard = await genericfunctions.getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                                if (appsetting?.paymentprovider === 'CULQI') {
+                                if (appsetting?.paymentprovider === "CULQI") {
                                     const requestCulqiCharge = await axiosObservable({
                                         data: {
                                             amount: settings.amount,
                                             bearer: appsetting.privatekey,
-                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (settings.description || ""))).slice(0, 80),
                                             currencyCode: settings.currency,
                                             email: (paymentcard?.mail || userprofile.email),
                                             sourceId: paymentcardcode,
@@ -2348,27 +1657,27 @@ exports.chargeInvoice = async (request, response) => {
                                     });
 
                                     if (requestCulqiCharge.data.success) {
-                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                        const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), "INSERT", null, null, usr, "PAID", paymentcardid, null, "REGISTEREDCARD", responsedata.id);
 
-                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                        await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successful_transaction', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, "successful_transaction", 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        let errorCharge = getCulqiError(requestCulqiCharge?.data?.operationMessage) || 'unsuccessful payment';
+                                        let errorCharge = genericfunctions.getCulqiError(requestCulqiCharge?.data?.operationMessage) || "unsuccessful payment";
 
                                         responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
-                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                                     const requestOpenpayCharge = await axiosObservable({
                                         data: {
                                             amount: settings.amount,
                                             currencyCode: settings.currency,
                                             customerId: paymentcard?.clientcode,
-                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (settings.description || ""))).slice(0, 80),
                                             igv: `${((appsetting.igv || 0) * 100)}`,
                                             merchantId: appsetting.culqiurl,
                                             operation: "CREATE",
@@ -2383,52 +1692,52 @@ exports.chargeInvoice = async (request, response) => {
                                     });
 
                                     if (requestOpenpayCharge.data.success) {
-                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                        const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), "INSERT", null, null, usr, "PAID", paymentcardid, null, "REGISTEREDCARD", responsedata.id);
 
-                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                        await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestOpenpayCharge.data.result, 'successful_transaction', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestOpenpayCharge.data.result, "successful_transaction", 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || "unsuccessful payment";
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge || 'generic_payment_error', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge || "generic_payment_error", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                             }
                             else {
-                                if (appsetting?.paymentprovider === 'CULQI') {
+                                if (appsetting?.paymentprovider === "CULQI") {
                                     const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                                    if (charge.object === 'error') {
+                                    if (charge.object === "error") {
                                         responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, 'CULQI', responsedata.id);
+                                        const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, "INSERT", null, null, usr, "PAID", token.id, token, "CULQI", responsedata.id);
 
-                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                        await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                         responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
-                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                                     const requestOpenpayCharge = await axiosObservable({
                                         data: {
                                             amount: settings.amount,
                                             currencyCode: settings.currency,
-                                            description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
-                                            email: (userprofile.email || 'generic@mail.com'),
-                                            firstName: `${(removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || 'EMPTY')).slice(0, 50)}`,
+                                            description: `${(genericfunctions.removeSpecialCharacter(settings.description || "").replace(/[^0-9A-Za-z ]/g, "")).slice(0, 80)}`,
+                                            email: (userprofile.email || "generic@mail.com"),
+                                            firstName: `${(genericfunctions.removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || "EMPTY")).slice(0, 50)}`,
                                             igv: `${((appsetting.igv || 0) * 100)}`,
-                                            lastName: `${(removeSpecialCharacter(userprofile.lastname || 'EMPTY')).slice(0, 50)}`,
+                                            lastName: `${(genericfunctions.removeSpecialCharacter(userprofile.lastname || "EMPTY")).slice(0, 50)}`,
                                             merchantId: appsetting.culqiurl,
                                             operation: "CREATE",
                                             orderId: `${corpid}-${orgid}-${invoiceid}-${Math.floor(Math.random() * 9999)}`,
-                                            phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
+                                            phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
                                             secretKey: appsetting.privatekey,
                                             sourceId: transaction?.transactionresponse?.data.id,
                                             url: appsetting.culqiurlcharge,
@@ -2439,40 +1748,40 @@ exports.chargeInvoice = async (request, response) => {
                                     });
 
                                     if (requestOpenpayCharge.data.success) {
-                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, userprofile.email || 'generic@mail.com', 'INSERT', null, null, usr, 'PAID', null, null, 'OPENPAY', responsedata.id)
+                                        const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, userprofile.email || "generic@mail.com", "INSERT", null, null, usr, "PAID", null, null, "OPENPAY", responsedata.id)
 
-                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), userprofile.email || 'generic@mail.com', usr, null, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                        await genericfunctions.insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), userprofile.email || "generic@mail.com", usr, null, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, requestOpenpayCharge.data.result.id, null, 'successful_transaction', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, requestOpenpayCharge.data.result.id, null, "successful_transaction", 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || "unsuccessful payment";
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge || 'generic_payment_error', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge || "generic_payment_error", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid user", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid appsetting', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid appsetting", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'amount does not match', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "amount does not match", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
         }
         else {
-            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoice not found', responsedata.status, responsedata.success);
+            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invoice not found", responsedata.status, responsedata.success);
             return response.status(responsedata.status).json(responsedata);
         }
     } catch (exception) {
@@ -2509,7 +1818,7 @@ exports.createBalance = async (request, response) => {
 
         if (iscard) {
             if (!paymentcardid || !paymentcardcode) {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete payment card', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete payment card", responsedata.status, responsedata.success);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
@@ -2518,8 +1827,8 @@ exports.createBalance = async (request, response) => {
         totalamount = Math.round((parseFloat(totalamount) + Number.EPSILON) * 100) / 100;
         totalpay = Math.round((parseFloat(totalpay) + Number.EPSILON) * 100) / 100;
 
-        const corp = await getCorporation(corpid, responsedata.id);
-        const org = await getOrganization(corpid, orgid, responsedata.id);
+        const corp = await genericfunctions.getCorporation(corpid, responsedata.id);
+        const org = await genericfunctions.getOrganization(corpid, orgid, responsedata.id);
 
         var correctcorrelative = false;
         var proceedpayment = false;
@@ -2532,7 +1841,7 @@ exports.createBalance = async (request, response) => {
 
                 if (org) {
                     if (org.docnum && org.doctype && org.businessname && org.fiscaladdress && org.sunatcountry) {
-                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                        if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
                             correctcorrelative = true;
                         }
                         else {
@@ -2543,17 +1852,17 @@ exports.createBalance = async (request, response) => {
                             proceedpayment = true;
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlative not found', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlative not found", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete organization', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete organization", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete organization', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete organization", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
@@ -2561,7 +1870,7 @@ exports.createBalance = async (request, response) => {
                 billbyorg = false;
 
                 if (corp.docnum && corp.doctype && corp.businessname && corp.fiscaladdress && corp.sunatcountry) {
-                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                    if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
                         correctcorrelative = true;
                     }
                     else {
@@ -2572,35 +1881,35 @@ exports.createBalance = async (request, response) => {
                         proceedpayment = true;
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlative not found', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlative not found", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete corporation', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete corporation", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
 
             if (proceedpayment) {
                 if ((Math.round((totalpay * 100 + Number.EPSILON) * 100) / 100) === settings.amount) {
-                    const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+                    const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
                     if (appsetting) {
-                        const userprofile = await getProfile(userid, responsedata.id);
+                        const userprofile = await genericfunctions.getProfile(userid, responsedata.id);
 
                         if (userprofile) {
-                            metadata.corpid = (corpid || '');
-                            metadata.corporation = removeSpecialCharacter(corp.description || '');
-                            metadata.orgid = (orgid || '');
-                            metadata.organization = removeSpecialCharacter(org?.orgdesc || '');
-                            metadata.document = ((billbyorg ? org.docnum : corp.docnum) || '');
-                            metadata.businessname = removeSpecialCharacter((billbyorg ? org.businessname : corp.businessname) || '');
-                            metadata.invoiceid = '';
-                            metadata.seriecode = '';
-                            metadata.emissiondate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
-                            metadata.user = removeSpecialCharacter(usr || '');
-                            metadata.reference = removeSpecialCharacter(reference || '');
+                            metadata.corpid = (corpid || "");
+                            metadata.corporation = genericfunctions.removeSpecialCharacter(corp.description || "");
+                            metadata.orgid = (orgid || "");
+                            metadata.organization = genericfunctions.removeSpecialCharacter(org?.orgdesc || "");
+                            metadata.document = ((billbyorg ? org.docnum : corp.docnum) || "");
+                            metadata.businessname = genericfunctions.removeSpecialCharacter((billbyorg ? org.businessname : corp.businessname) || "");
+                            metadata.invoiceid = "";
+                            metadata.seriecode = "";
+                            metadata.emissiondate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0];
+                            metadata.user = genericfunctions.removeSpecialCharacter(usr || "");
+                            metadata.reference = genericfunctions.removeSpecialCharacter(reference || "");
 
                             var successPay = false;
                             var charge = null;
@@ -2608,14 +1917,14 @@ exports.createBalance = async (request, response) => {
                             var paymentcard = null;
 
                             if (iscard) {
-                                paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
+                                paymentcard = await genericfunctions.getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                                if (appsetting?.paymentprovider === 'CULQI') {
+                                if (appsetting?.paymentprovider === "CULQI") {
                                     const requestCulqiCharge = await axiosObservable({
                                         data: {
                                             amount: settings.amount,
                                             bearer: appsetting.privatekey,
-                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (settings.description || ""))).slice(0, 80),
                                             currencyCode: settings.currency,
                                             email: (paymentcard?.mail || userprofile.email),
                                             sourceId: paymentcardcode,
@@ -2636,19 +1945,19 @@ exports.createBalance = async (request, response) => {
                                         paymenttype = requestCulqiCharge?.data?.result?.source?.iin?.card_type;
                                     }
                                     else {
-                                        let errorCharge = getCulqiError(requestCulqiCharge?.data?.operationMessage) || 'unsuccessful payment';
+                                        let errorCharge = genericfunctions.getCulqiError(requestCulqiCharge?.data?.operationMessage) || "unsuccessful payment";
 
                                         responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
-                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                                     const requestOpenpayCharge = await axiosObservable({
                                         data: {
                                             amount: settings.amount,
                                             currencyCode: settings.currency,
                                             customerId: paymentcard?.clientcode,
-                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            description: (genericfunctions.removeSpecialCharacter("PAYMENT: " + (settings.description || ""))).slice(0, 80),
                                             igv: `${((appsetting.igv || 0) * 100)}`,
                                             merchantId: appsetting.culqiurl,
                                             operation: "CREATE",
@@ -2670,18 +1979,18 @@ exports.createBalance = async (request, response) => {
                                         paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                     }
                                     else {
-                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || "unsuccessful payment";
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge || 'generic_payment_error', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge || "generic_payment_error", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                             }
                             else {
-                                if (appsetting?.paymentprovider === 'CULQI') {
+                                if (appsetting?.paymentprovider === "CULQI") {
                                     charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                                    if (charge.object === 'error') {
+                                    if (charge.object === "error") {
                                         responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
@@ -2691,20 +2000,20 @@ exports.createBalance = async (request, response) => {
                                         paymenttype = charge?.source?.iin?.card_type;
                                     }
                                 }
-                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                else if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
                                     const requestOpenpayCharge = await axiosObservable({
                                         data: {
                                             amount: settings.amount,
                                             currencyCode: settings.currency,
-                                            description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
-                                            email: (userprofile.email || 'generic@mail.com'),
-                                            firstName: `${(removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || 'EMPTY')).slice(0, 50)}`,
+                                            description: `${(genericfunctions.removeSpecialCharacter(settings.description || "").replace(/[^0-9A-Za-z ]/g, "")).slice(0, 80)}`,
+                                            email: (userprofile.email || "generic@mail.com"),
+                                            firstName: `${(genericfunctions.removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || "EMPTY")).slice(0, 50)}`,
                                             igv: `${((appsetting.igv || 0) * 100)}`,
-                                            lastName: `${(removeSpecialCharacter(userprofile.lastname || 'EMPTY')).slice(0, 50)}`,
+                                            lastName: `${(genericfunctions.removeSpecialCharacter(userprofile.lastname || "EMPTY")).slice(0, 50)}`,
                                             merchantId: appsetting.culqiurl,
                                             operation: "CREATE",
                                             orderId: `${corpid}-${orgid}-${Math.floor(Math.random() * 99999999)}`,
-                                            phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
+                                            phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
                                             secretKey: appsetting.privatekey,
                                             sourceId: transaction?.transactionresponse?.data.id,
                                             url: appsetting.culqiurlcharge,
@@ -2722,26 +2031,26 @@ exports.createBalance = async (request, response) => {
                                         paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                     }
                                     else {
-                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || "unsuccessful payment";
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge || 'generic_payment_error', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge || "generic_payment_error", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                             }
 
                             if (successPay) {
-                                var balanceResponse = await createBalance(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr, responsedata.id);
+                                var balanceResponse = await genericfunctions.createBalance(corpid, orgid, 0, reference, "ACTIVO", "GENERAL", null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, "PAID", new Date().toISOString().split("T")[0], usr, usr, responsedata.id);
 
                                 if (balanceResponse) {
-                                    var lastExchangeData = await getExchangeRate('USD', responsedata.id);
+                                    var lastExchangeData = await genericfunctions.getExchangeRate("USD", responsedata.id);
 
                                     var invoicesubtotal = 0;
                                     var invoicetaxes = 0;
                                     var invoicetotalcharge = 0;
 
-                                    var producthasigv = '';
-                                    var productigvtribute = '';
+                                    var producthasigv = "";
+                                    var productigvtribute = "";
                                     var producttotaligv = 0;
                                     var producttotalamount = 0;
                                     var productigvrate = 0;
@@ -2749,13 +2058,13 @@ exports.createBalance = async (request, response) => {
                                     var productnetprice = 0;
                                     var productnetworth = 0;
 
-                                    if (billbyorg ? org.doctype !== '0' : org.doctype !== '0') {
+                                    if (billbyorg ? org.doctype !== "0" : org.doctype !== "0") {
                                         invoicesubtotal = buyamount;
                                         invoicetaxes = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
                                         invoicetotalcharge = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
 
-                                        producthasigv = '10';
-                                        productigvtribute = '1000';
+                                        producthasigv = "10";
+                                        productigvtribute = "1000";
                                         producttotaligv = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
                                         producttotalamount = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
                                         productigvrate = Math.round(((appsetting.igv) + Number.EPSILON) * 100) / 100;
@@ -2768,8 +2077,8 @@ exports.createBalance = async (request, response) => {
                                         invoicetaxes = 0;
                                         invoicetotalcharge = buyamount;
 
-                                        producthasigv = '40';
-                                        productigvtribute = '9998';
+                                        producthasigv = "40";
+                                        productigvtribute = "9998";
                                         producttotaligv = 0;
                                         producttotalamount = buyamount;
                                         productigvrate = 0;
@@ -2780,38 +2089,38 @@ exports.createBalance = async (request, response) => {
 
                                     const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
 
-                                    var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchangeData?.exchangerate || 1, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false, currentDate.getFullYear(), (currentDate.getMonth() + 1), paymenttype || "", responsedata.id);
+                                    var invoiceResponse = await genericfunctions.createInvoice(corpid, orgid, 0, reference, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, purchaseorder, null, null, null, comments, "typecredit_alcontado", null, null, null, null, null, usr, null, buyamount, "PAID", false, currentDate.getFullYear(), (currentDate.getMonth() + 1), paymenttype || "", responsedata.id);
 
                                     if (invoiceResponse) {
-                                        await changeInvoiceBalance(corpid, orgid, balanceResponse.balanceid, invoiceResponse.invoiceid, usr, responsedata.id);
+                                        await genericfunctions.changeInvoiceBalance(corpid, orgid, balanceResponse.balanceid, invoiceResponse.invoiceid, usr, responsedata.id);
 
-                                        await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, 'ACTIVO', 'NINGUNO', 1, 'S001', producthasigv, '10', productigvtribute, 'ZZ', producttotaligv, producttotalamount, productigvrate, productprice, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, productnetprice, productnetworth, parseFloat(buyamount), usr, responsedata.id);
+                                        await genericfunctions.createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, productnetprice, productnetworth, parseFloat(buyamount), usr, responsedata.id);
 
-                                        const chargedata = await insertCharge(corpid, orgid, invoiceResponse.invoiceid, null, (settings.amount / 100), true, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), settings.currency, settings.description, (iscard ? (paymentcard?.mail || userprofile.email) : (token ? token.email : (userprofile.email || 'generic@mail.com'))), 'INSERT', null, null, usr, 'PAID', (iscard ? paymentcardid : (token ? token.id : null)), (iscard ? null : token || null), (iscard ? "REGISTEREDCARD" : (charge.object ? 'CULQI' : 'OPENPAY')), responsedata.id);
+                                        const chargedata = await genericfunctions.insertCharge(corpid, orgid, invoiceResponse.invoiceid, null, (settings.amount / 100), true, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), settings.currency, settings.description, (iscard ? (paymentcard?.mail || userprofile.email) : (token ? token.email : (userprofile.email || "generic@mail.com"))), "INSERT", null, null, usr, "PAID", (iscard ? paymentcardid : (token ? token.id : null)), (iscard ? null : token || null), (iscard ? "REGISTEREDCARD" : (charge.object ? "CULQI" : "OPENPAY")), responsedata.id);
 
-                                        await insertPayment(corpid, orgid, invoiceResponse.invoiceid, true, chargedata?.chargeid, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), (settings.amount / 100), (iscard ? (paymentcard?.mail || userprofile.email) : (token ? token.email : (userprofile.email || 'generic@mail.com'))), usr, (iscard ? paymentcardid : (token ? token.id : null)), (iscard ? null : token || null), appsetting.location, appsetting.paymentprovider, responsedata.id);
+                                        await genericfunctions.insertPayment(corpid, orgid, invoiceResponse.invoiceid, true, chargedata?.chargeid, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), (settings.amount / 100), (iscard ? (paymentcard?.mail || userprofile.email) : (token ? token.email : (userprofile.email || "generic@mail.com"))), usr, (iscard ? paymentcardid : (token ? token.id : null)), (iscard ? null : token || null), appsetting.location, appsetting.paymentprovider, responsedata.id);
 
                                         var invoicecorrelative = null;
                                         var documenttype = null;
 
                                         if (corp.billbyorg) {
-                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKET', responsedata.id);
-                                                documenttype = '03';
+                                            if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKET", responsedata.id);
+                                                documenttype = "03";
                                             }
                                             else {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE', responsedata.id);
-                                                documenttype = '01';
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICE", responsedata.id);
+                                                documenttype = "01";
                                             }
                                         }
                                         else {
-                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKET', responsedata.id);
-                                                documenttype = '03';
+                                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKET", responsedata.id);
+                                                documenttype = "03";
                                             }
                                             else {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE', responsedata.id);
-                                                documenttype = '01';
+                                                invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICE", responsedata.id);
+                                                documenttype = "01";
                                             }
                                         }
 
@@ -2820,24 +2129,24 @@ exports.createBalance = async (request, response) => {
                                                 var invoicedata = {
                                                     CodigoAnexoEmisor: appsetting.annexcode,
                                                     CodigoFormatoImpresion: appsetting.printingformat,
-                                                    CodigoMoneda: 'USD',
+                                                    CodigoMoneda: "USD",
                                                     Username: appsetting.sunatusername,
                                                     TipoDocumento: documenttype,
                                                     TipoRucEmisor: appsetting.emittertype,
                                                     CodigoRucReceptor: billbyorg ? org.doctype : corp.doctype,
                                                     CodigoUbigeoEmisor: appsetting.ubigeo,
                                                     EnviarSunat: billbyorg ? org.autosendinvoice : corp.autosendinvoice,
-                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                    FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0],
+                                                    FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0],
                                                     MailEnvio: billbyorg ? org.contactemail : corp.contactemail,
                                                     MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
                                                     NombreComercialEmisor: appsetting.tradename,
                                                     RazonSocialEmisor: appsetting.businessname,
                                                     RazonSocialReceptor: billbyorg ? org.businessname : corp.businessname,
-                                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                                    CorrelativoDocumento: genericfunctions.padNumber(invoicecorrelative.p_correlative, 8),
                                                     RucEmisor: appsetting.ruc,
                                                     NumeroDocumentoReceptor: billbyorg ? org.docnum : corp.docnum,
-                                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                    NumeroSerieDocumento: documenttype === "01" ? appsetting.invoiceserie : appsetting.ticketserie,
                                                     RetornaPdf: appsetting.returnpdf,
                                                     RetornaXmlSunat: appsetting.returnxmlsunat,
                                                     RetornaXml: appsetting.returnxml,
@@ -2854,27 +2163,27 @@ exports.createBalance = async (request, response) => {
                                                 }
 
                                                 if (billbyorg) {
-                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
-                                                    invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = org.sunatcountry === "PE" ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === "PE" ? "0" : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
+                                                    invoicedata.MontoTotalIgv = org.sunatcountry === "PE" ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
                                                 }
                                                 else {
-                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
-                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === "PE" ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === "PE" ? "0" : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
+                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === "PE" ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
                                                 }
 
                                                 var calcdetraction = false;
 
                                                 if (corp.billbyorg) {
-                                                    if (org.sunatcountry === 'PE') {
+                                                    if (org.sunatcountry === "PE") {
                                                         calcdetraction = true;
                                                     }
                                                 }
                                                 else {
-                                                    if (corp.sunatcountry === 'PE') {
+                                                    if (corp.sunatcountry === "PE") {
                                                         calcdetraction = true;
                                                     }
                                                 }
@@ -2889,7 +2198,7 @@ exports.createBalance = async (request, response) => {
 
                                                         if (compareamount > appsetting.detractionminimum) {
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                            invoicedata.CodigoOperacionSunat = '1001';
+                                                            invoicedata.CodigoOperacionSunat = "1001";
                                                             invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                             invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
                                                             invoicedata.MontoTotalInafecto = null;
@@ -2898,8 +2207,8 @@ exports.createBalance = async (request, response) => {
                                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                             var adicional02 = {
-                                                                CodigoDatoAdicional: '06',
-                                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                                CodigoDatoAdicional: "06",
+                                                                DescripcionDatoAdicional: "CUENTA DE DETRACCION: " + appsetting.detractionaccount
                                                             }
 
                                                             invoicedata.DataList.push(adicional02);
@@ -2908,15 +2217,15 @@ exports.createBalance = async (request, response) => {
                                                 }
 
                                                 var adicional01 = {
-                                                    CodigoDatoAdicional: '05',
-                                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                    CodigoDatoAdicional: "05",
+                                                    DescripcionDatoAdicional: "FORMA DE PAGO: TRANSFERENCIA"
                                                 }
 
                                                 invoicedata.DataList.push(adicional01);
 
                                                 if (purchaseorder) {
                                                     var adicional03 = {
-                                                        CodigoDatoAdicional: '15',
+                                                        CodigoDatoAdicional: "15",
                                                         DescripcionDatoAdicional: purchaseorder
                                                     }
 
@@ -2925,7 +2234,7 @@ exports.createBalance = async (request, response) => {
 
                                                 if (comments) {
                                                     var adicional04 = {
-                                                        CodigoDatoAdicional: '07',
+                                                        CodigoDatoAdicional: "07",
                                                         DescripcionDatoAdicional: comments
                                                     }
 
@@ -2933,8 +2242,8 @@ exports.createBalance = async (request, response) => {
                                                 }
 
                                                 var adicional05 = {
-                                                    CodigoDatoAdicional: '01',
-                                                    DescripcionDatoAdicional: 'AL CONTADO'
+                                                    CodigoDatoAdicional: "01",
+                                                    DescripcionDatoAdicional: "AL CONTADO"
                                                 }
 
                                                 invoicedata.DataList.push(adicional05);
@@ -2945,9 +2254,9 @@ exports.createBalance = async (request, response) => {
 
                                                 var invoicedetaildata = {
                                                     CantidadProducto: 1,
-                                                    CodigoProducto: 'S001',
-                                                    TipoVenta: '10',
-                                                    UnidadMedida: 'ZZ',
+                                                    CodigoProducto: "S001",
+                                                    TipoVenta: "10",
+                                                    UnidadMedida: "ZZ",
                                                     IgvTotal: Math.round((producttotaligv + Number.EPSILON) * 100) / 100,
                                                     MontoTotal: Math.round((producttotalamount + Number.EPSILON) * 100) / 100,
                                                     TasaIgv: Math.round((productigvrate * 100) || 0),
@@ -2961,39 +2270,39 @@ exports.createBalance = async (request, response) => {
 
                                                 invoicedata.ProductList.push(invoicedetaildata);
 
-                                                if (appsetting?.invoiceprovider === 'MIFACT') {
+                                                if (appsetting?.invoiceprovider === "MIFACT") {
                                                     const requestSendToSunat = await axiosObservable({
                                                         data: invoicedata,
-                                                        method: 'post',
+                                                        method: "post",
                                                         url: `${bridgeEndpoint}processmifact/sendinvoice`,
                                                         _requestid: responsedata.id,
                                                     });
 
                                                     if (requestSendToSunat.data.result) {
-                                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "INVOICED", null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
                                                     }
                                                     else {
-                                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                         if (corp.billbyorg) {
-                                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                         else {
-                                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                     }
                                                 }
-                                                else if (appsetting?.invoiceprovider === 'SIIGO') {
+                                                else if (appsetting?.invoiceprovider === "SIIGO") {
                                                     invoicedata.TipoDocumentoSiigo = "FV";
                                                     invoicedata.TipoCambio = (lastExchangeData?.exchangeratecop / lastExchangeData?.exchangerate) || 1;
                                                     invoicedata.TipoPago = (paymenttype == "Crédito" || paymenttype == "credit") ? "Tarjeta Crédito" : "Tarjeta Débito";
@@ -3003,7 +2312,7 @@ exports.createBalance = async (request, response) => {
 
                                                     const requestSendToSiigo = await axiosObservable({
                                                         data: invoicedata,
-                                                        method: 'post',
+                                                        method: "post",
                                                         url: `${bridgeEndpoint}processsiigo/sendinvoice`,
                                                         _requestid: responsedata.id,
                                                     });
@@ -3015,25 +2324,25 @@ exports.createBalance = async (request, response) => {
                                                             correlativeOverride = parseInt(`${requestSendToSiigo.data.result.correlativoCpe}`);
                                                         }
 
-                                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "INVOICED", null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
                                                     }
                                                     else {
-                                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, "typecredit_alcontado" || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                         if (corp.billbyorg) {
-                                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                         else {
-                                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                                             }
                                                             else {
-                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                                             }
                                                         }
                                                     }
@@ -3042,76 +2351,76 @@ exports.createBalance = async (request, response) => {
                                             catch (exception) {
                                                 printException(exception, request.originalUrl, responsedata.id);
 
-                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                                await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, "typecredit_alcontado", null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                                 if (corp.billbyorg) {
-                                                    if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                        await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                    if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                                     }
                                                     else {
-                                                        await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                                     }
                                                 }
                                                 else {
-                                                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                        await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                    if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                                     }
                                                     else {
-                                                        await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                        await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                                     }
                                                 }
                                             }
                                         }
                                         else {
-                                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", "Correlative not found", null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, "typecredit_alcontado", null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
                                         }
 
                                         if (iscard) {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'finished process' }, 'culqipaysuccess', 200, true);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: "finished process" }, "culqipaysuccess", 200, true);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                         else {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, charge?.outcome?.code || charge?.id, charge?.object ? { id: charge.id, object: charge.object } : null, charge?.outcome?.user_message || 'successful_transaction', 200, true);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, charge?.outcome?.code || charge?.id, charge?.object ? { id: charge.id, object: charge.object } : null, charge?.outcome?.user_message || "successful_transaction", 200, true);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
                                     else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error creating invoice', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error creating invoice", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error creating balance', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "error creating balance", responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "unsuccessful payment", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid user", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid appsetting', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid appsetting", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid invoice data', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invalid invoice data", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'payment card missing information', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "payment card missing information", responsedata.status, responsedata.success);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
         else {
-            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'corporation not found', responsedata.status, responsedata.success);
+            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "corporation not found", responsedata.status, responsedata.success);
             return response.status(responsedata.status).json(responsedata);
         }
     } catch (exception) {
@@ -3148,38 +2457,38 @@ exports.createCreditNote = async (request, response) => {
 
         creditnotediscount = Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100;
 
-        const invoice = await getInvoice(corpid, orgid, userid, invoiceid, responsedata.id);
+        const invoice = await genericfunctions.getInvoice(corpid, orgid, userid, invoiceid, responsedata.id);
 
         if (invoice) {
-            if (invoice.type === 'INVOICE' && invoice.invoicestatus === 'INVOICED' && (invoice.invoicetype === '01' || invoice.invoicetype === '03')) {
-                const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+            if (invoice.type === "INVOICE" && invoice.invoicestatus === "INVOICED" && (invoice.invoicetype === "01" || invoice.invoicetype === "03")) {
+                const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
                 if (appsetting) {
-                    const invoiceDate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
+                    const invoiceDate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0];
                     const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
 
-                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false, currentDate.getFullYear(), (currentDate.getMonth() + 1), paymentmethod || "", responsedata.id);
+                    const invoiceResponse = await genericfunctions.createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, "CREDITNOTE", appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, "07", invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === "01" ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === "01" ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, "PENDING", null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, "NONE", false, currentDate.getFullYear(), (currentDate.getMonth() + 1), paymentmethod || "", responsedata.id);
 
                     if (invoiceResponse) {
                         var invoicecorrelative = null;
 
-                        if (invoice.invoicetype == '01') {
-                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICE', responsedata.id);
+                        if (invoice.invoicetype == "01") {
+                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITINVOICE", responsedata.id);
                         }
                         else {
-                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKET', responsedata.id);
+                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITTICKET", responsedata.id);
                         }
 
                         if (invoicecorrelative) {
                             try {
-                                var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+                                var exchangeratedata = await genericfunctions.getExchangeRate(invoice.currency, responsedata.id);
 
                                 var invoicedata = {
                                     CodigoAnexoEmisor: appsetting.annexcode,
                                     CodigoFormatoImpresion: appsetting.printingformat,
                                     CodigoMoneda: invoice.currency,
                                     Username: appsetting.sunatusername,
-                                    TipoDocumento: '07',
+                                    TipoDocumento: "07",
                                     TipoRucEmisor: appsetting.emittertype,
                                     CodigoRucReceptor: invoice.receiverdoctype,
                                     CodigoUbigeoEmisor: appsetting.ubigeo,
@@ -3187,18 +2496,18 @@ exports.createCreditNote = async (request, response) => {
                                     FechaEmision: invoiceDate,
                                     FechaVencimiento: invoiceDate,
                                     MailEnvio: invoice.receivermail,
-                                    MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(creditnotediscount * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
+                                    MontoTotal: Math.round(((creditnotetype === "01" ? invoice.totalamount : parseFloat(creditnotediscount * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
                                     NombreComercialEmisor: appsetting.tradename,
                                     RazonSocialEmisor: appsetting.businessname,
                                     RazonSocialReceptor: invoice.receiverbusinessname,
-                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                    CorrelativoDocumento: genericfunctions.padNumber(invoicecorrelative.p_correlative, 8),
                                     RucEmisor: appsetting.ruc,
                                     NumeroDocumentoReceptor: invoice.receiverdocnum,
-                                    NumeroSerieDocumento: invoice.invoicetype === '01' ? appsetting.invoicecreditserie : appsetting.ticketcreditserie,
+                                    NumeroSerieDocumento: invoice.invoicetype === "01" ? appsetting.invoicecreditserie : appsetting.ticketcreditserie,
                                     RetornaPdf: appsetting.returnpdf,
                                     RetornaXmlSunat: appsetting.returnxmlsunat,
                                     RetornaXml: appsetting.returnxml,
-                                    TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                    TipoCambio: invoice.currency === "PEN" ? "1.000" : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                     Token: appsetting.token,
                                     DireccionFiscalEmisor: appsetting.fiscaladdress,
                                     DireccionFiscalReceptor: invoice.receiverfiscaladdress,
@@ -3207,21 +2516,21 @@ exports.createCreditNote = async (request, response) => {
                                     Endpoint: appsetting.sunaturl,
                                     PaisRecepcion: invoice.receivercountry,
                                     CodigoOperacionSunat: invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode,
-                                    MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount + Number.EPSILON) * 100) / 100 : null),
-                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((creditnotediscount * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
-                                    MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
+                                    MontoTotalGravado: creditnotetype === "01" ? (invoice.receivercountry === "PE" ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === "PE" ? Math.round((creditnotediscount + Number.EPSILON) * 100) / 100 : null),
+                                    MontoTotalInafecto: creditnotetype === "01" ? (invoice.receivercountry === "PE" ? "0" : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === "PE" ? "0" : Math.round((creditnotediscount * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
+                                    MontoTotalIgv: creditnotetype === "01" ? (invoice.receivercountry === "PE" ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === "PE" ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
                                     TipoNotaCredito: creditnotetype,
                                     MotivoNotaCredito: creditnotemotive,
                                     CodigoDocumentoNotaCredito: invoice.invoicetype,
                                     NumeroSerieNotaCredito: invoice.serie,
-                                    NumeroCorrelativoNotaCredito: padNumber(invoice.correlative, 8),
+                                    NumeroCorrelativoNotaCredito: genericfunctions.padNumber(invoice.correlative, 8),
                                     FechaEmisionNotaCredito: invoice.invoicedate,
                                     ProductList: []
                                 }
 
-                                const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoice.invoiceid, responsedata.id);
+                                const invoicedetail = await genericfunctions.getInvoiceDetail(corpid, orgid, userid, invoice.invoiceid, responsedata.id);
 
-                                if (creditnotetype === '01') {
+                                if (creditnotetype === "01") {
                                     invoicedetail.forEach(async data => {
                                         var invoicedetaildata = {
                                             CantidadProducto: data.quantity,
@@ -3235,8 +2544,8 @@ exports.createCreditNote = async (request, response) => {
                                             DescripcionProducto: data.productdescription,
                                             PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
                                             ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
-                                            AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
-                                            TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
+                                            AfectadoIgv: invoice.receivercountry === "PE" ? "10" : "40",
+                                            TributoIgv: invoice.receivercountry === "PE" ? "1000" : "9998",
                                         };
 
                                         invoicedata.ProductList.push(invoicedetaildata);
@@ -3244,64 +2553,64 @@ exports.createCreditNote = async (request, response) => {
                                 }
                                 else {
                                     var invoicedetaildata = {
-                                        CantidadProducto: '1',
+                                        CantidadProducto: "1",
                                         CodigoProducto: invoicedetail[0].productcode,
                                         TipoVenta: invoicedetail[0].saletype,
                                         UnidadMedida: invoicedetail[0].measureunit,
-                                        IgvTotal: invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
+                                        IgvTotal: invoice.receivercountry === "PE" ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
                                         MontoTotal: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
-                                        TasaIgv: invoice.receivercountry === 'PE' ? Math.round((appsetting.igv * 100) || 0) : 0,
+                                        TasaIgv: invoice.receivercountry === "PE" ? Math.round((appsetting.igv * 100) || 0) : 0,
                                         PrecioProducto: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
-                                        PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
-                                        ValorNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
-                                        AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
-                                        TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
+                                        PrecioNetoProducto: invoice.receivercountry === "PE" ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
+                                        ValorNetoProducto: invoice.receivercountry === "PE" ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
+                                        AfectadoIgv: invoice.receivercountry === "PE" ? "10" : "40",
+                                        TributoIgv: invoice.receivercountry === "PE" ? "1000" : "9998",
                                     };
 
                                     invoicedata.ProductList.push(invoicedetaildata);
                                 }
 
-                                if (appsetting?.invoiceprovider === 'MIFACT') {
+                                if (appsetting?.invoiceprovider === "MIFACT") {
                                     const requestSendToSunat = await axiosObservable({
                                         data: invoicedata,
-                                        method: 'post',
+                                        method: "post",
                                         url: `${bridgeEndpoint}processmifact/sendinvoice`,
                                         _requestid: responsedata.id,
                                     });
 
                                     if (requestSendToSunat.data.result) {
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "INVOICED", null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, "07", invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                        if (creditnotetype === '01') {
-                                            await changeInvoiceStatus(corpid, orgid, invoiceid, 'CANCELED', usr, responsedata.id)
+                                        if (creditnotetype === "01") {
+                                            await genericfunctions.changeInvoiceStatus(corpid, orgid, invoiceid, "CANCELED", usr, responsedata.id)
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, "successinvoiced", 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, "07", invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                        if (invoice.invoicetype == '01') {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICEERROR', responsedata.id);
+                                        if (invoice.invoicetype == "01") {
+                                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITINVOICEERROR", responsedata.id);
                                         }
                                         else {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKETERROR', responsedata.id);
+                                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITTICKETERROR", responsedata.id);
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "createdbutnotinvoiced", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
-                                else if (appsetting?.invoiceprovider === 'SIIGO') {
+                                else if (appsetting?.invoiceprovider === "SIIGO") {
                                     invoicedata.TipoDocumentoSiigo = "NC";
-                                    invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
+                                    invoicedata.TipoCambio = invoice.currency === "COP" ? "1.000" : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                     invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
                                     invoicedata.InvoiceId = invoice.hashcode;
 
-                                    const corp = await getCorporation(corpid, responsedata.id);
-                                    const org = await getOrganization(corpid, orgid, responsedata.id);
+                                    const corp = await genericfunctions.getCorporation(corpid, responsedata.id);
+                                    const org = await genericfunctions.getOrganization(corpid, orgid, responsedata.id);
 
                                     invoicedata.CityCountry = corp.billbyorg ? org.countrycode : corp.countrycode;
                                     invoicedata.CityState = corp.billbyorg ? org.statecode : corp.statecode;
@@ -3309,7 +2618,7 @@ exports.createCreditNote = async (request, response) => {
 
                                     const requestSendToSiigo = await axiosObservable({
                                         data: invoicedata,
-                                        method: 'post',
+                                        method: "post",
                                         url: `${bridgeEndpoint}processsiigo/sendinvoice`,
                                         _requestid: responsedata.id,
                                     });
@@ -3321,26 +2630,26 @@ exports.createCreditNote = async (request, response) => {
                                             correlativeOverride = parseInt(`${requestSendToSiigo.data.result.correlativoCpe}`);
                                         }
 
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "INVOICED", null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, "07", invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
 
-                                        if (creditnotetype === '01') {
-                                            await changeInvoiceStatus(corpid, orgid, invoiceid, 'CANCELED', usr, responsedata.id)
+                                        if (creditnotetype === "01") {
+                                            await genericfunctions.changeInvoiceStatus(corpid, orgid, invoiceid, "CANCELED", usr, responsedata.id)
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSiigo.data.result, 'successinvoiced', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSiigo.data.result, "successinvoiced", 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, "07", invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                        if (invoice.invoicetype == '01') {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICEERROR', responsedata.id);
+                                        if (invoice.invoicetype == "01") {
+                                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITINVOICEERROR", responsedata.id);
                                         }
                                         else {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKETERROR', responsedata.id);
+                                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITTICKETERROR", responsedata.id);
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "createdbutnotinvoiced", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
@@ -3348,43 +2657,43 @@ exports.createCreditNote = async (request, response) => {
                             catch (exception) {
                                 printException(exception, request.originalUrl, responsedata.id);
 
-                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, "07", invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                if (invoice.invoicetype == '01') {
-                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICEERROR', responsedata.id);
+                                if (invoice.invoicetype == "01") {
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITINVOICEERROR", responsedata.id);
                                 }
                                 else {
-                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKETERROR', responsedata.id);
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "CREDITTICKETERROR", responsedata.id);
                                 }
 
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "createdbutnotinvoiced", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat || null, invoice.returnpdf || null, invoice.returnxmlsunat || null, invoice.returnxml || null, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype || null, invoice.receiverdocnum || null, invoice.receiverbusinessname || null, invoice.receiverfiscaladdress || null, invoice.receivercountry || null, invoice.receivermail || null, '07', invoice.sunatopecode || null, invoiceDate, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", "Correlative not found", null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat || null, invoice.returnpdf || null, invoice.returnxmlsunat || null, invoice.returnxml || null, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype || null, invoice.receiverdocnum || null, invoice.receiverbusinessname || null, invoice.receiverfiscaladdress || null, invoice.receivercountry || null, invoice.receivermail || null, "07", invoice.sunatopecode || null, invoiceDate, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlativenotfound', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlativenotfound", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'errorcreatinginvoice', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "errorcreatinginvoice", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'appsettingnotfound', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "appsettingnotfound", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoicenotmatch', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invoicenotmatch", responsedata.status, responsedata.success);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
         else {
-            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoicenotfound', responsedata.status, responsedata.success);
+            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invoicenotfound", responsedata.status, responsedata.success);
             return response.status(responsedata.status).json(responsedata);
         }
     } catch (exception) {
@@ -3409,11 +2718,11 @@ exports.createInvoice = async (request, response) => {
 
         if ((corpid || orgid) && clientcountry) {
             if (productdetail) {
-                const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+                const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
                 if (appsetting) {
-                    if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
-                        if (invoicecurrency === 'COP') {
+                    if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
+                        if (invoicecurrency === "COP") {
                             invoicetotalamount = Math.round((parseFloat(invoicetotalamount) + Number.EPSILON));
                         }
                     }
@@ -3424,9 +2733,9 @@ exports.createInvoice = async (request, response) => {
                     var invoicetaxes = 0;
                     var invoicetotalcharge = 0;
 
-                    var lastExchangeData = await getExchangeRate(invoicecurrency, responsedata.id);
+                    var lastExchangeData = await genericfunctions.getExchangeRate(invoicecurrency, responsedata.id);
 
-                    if (clientdoctype !== '0') {
+                    if (clientdoctype !== "0") {
                         invoicesubtotal = invoicetotalamount;
                         invoicetaxes = Math.round(((appsetting.igv * invoicetotalamount) + Number.EPSILON) * 100) / 100;
                         invoicetotalcharge = Math.round((((appsetting.igv * invoicetotalamount) + invoicetotalamount) + Number.EPSILON) * 100) / 100;
@@ -3437,26 +2746,26 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchangeData?.exchangerate || 1, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false, year, month, paymentmethod, responsedata.id);
+                    var invoiceResponse = await genericfunctions.createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchangeData?.exchangerate || 1, (onlyinsert ? "PENDING" : "DRAFT"), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, "PENDING", false, year, month, paymentmethod, responsedata.id);
 
                     if (invoiceResponse) {
                         if (invoiceid) {
-                            await deleteInvoiceDetail(corpid, orgid, invoiceid, responsedata.id);
+                            await genericfunctions.deleteInvoiceDetail(corpid, orgid, invoiceid, responsedata.id);
                         }
 
                         await Promise.all(productdetail.map(async (element) => {
                             var elementproductsubtotal = Math.round((parseFloat(element.productsubtotal) + Number.EPSILON) * 100) / 100;
                             var elementproductquantity = Math.round((parseFloat(element.productquantity) + Number.EPSILON) * 100) / 100;
 
-                            if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
-                                if (invoicecurrency === 'COP') {
+                            if (appsetting?.paymentprovider === "OPENPAY COLOMBIA") {
+                                if (invoicecurrency === "COP") {
                                     elementproductsubtotal = Math.round((parseFloat(element.productsubtotal) + Number.EPSILON));
                                     elementproductquantity = Math.round((parseFloat(element.productquantity) + Number.EPSILON));
                                 }
                             }
 
-                            var producthasigv = '';
-                            var productigvtribute = '';
+                            var producthasigv = "";
+                            var productigvtribute = "";
                             var producttotaligv = 0;
                             var producttotalamount = 0;
                             var productigvrate = 0;
@@ -3464,9 +2773,9 @@ exports.createInvoice = async (request, response) => {
                             var productnetprice = 0;
                             var productnetworth = 0;
 
-                            if (clientdoctype !== '0') {
-                                producthasigv = '10';
-                                productigvtribute = '1000';
+                            if (clientdoctype !== "0") {
+                                producthasigv = "10";
+                                productigvtribute = "1000";
                                 producttotaligv = Math.round((((elementproductquantity * elementproductsubtotal) * appsetting.igv) + Number.EPSILON) * 100) / 100;
                                 producttotalamount = Math.round((((elementproductquantity * elementproductsubtotal) * (1 + appsetting.igv)) + Number.EPSILON) * 100) / 100;
                                 productigvrate = Math.round(((appsetting.igv) + Number.EPSILON) * 100) / 100;
@@ -3475,8 +2784,8 @@ exports.createInvoice = async (request, response) => {
                                 productnetworth = Math.round(((elementproductquantity * elementproductsubtotal) + Number.EPSILON) * 100) / 100;
                             }
                             else {
-                                producthasigv = '40';
-                                productigvtribute = '9998';
+                                producthasigv = "40";
+                                productigvtribute = "9998";
                                 producttotaligv = 0;
                                 producttotalamount = Math.round(((elementproductquantity * elementproductsubtotal) + Number.EPSILON) * 100) / 100;
                                 productigvrate = 0;
@@ -3485,7 +2794,7 @@ exports.createInvoice = async (request, response) => {
                                 productnetworth = Math.round(((elementproductquantity * elementproductsubtotal) + Number.EPSILON) * 100) / 100;
                             }
 
-                            await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', elementproductquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, elementproductsubtotal, usr, responsedata.id);
+                            await genericfunctions.createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, "ACTIVO", "NINGUNO", elementproductquantity, element.productcode, producthasigv, "10", productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, elementproductsubtotal, usr, responsedata.id);
 
                             productinfo.push({
                                 producthasigv: producthasigv,
@@ -3505,20 +2814,20 @@ exports.createInvoice = async (request, response) => {
                         }));
 
                         if (onlyinsert) {
-                            responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'successful_register', 200, true);
+                            responsedata = genericfunctions.changeResponseData(responsedata, null, null, "successful_register", 200, true);
                             return response.status(responsedata.status).json(responsedata);
                         }
 
                         var invoicecorrelative = null;
                         var documenttype = null;
 
-                        if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
-                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKET', responsedata.id);
-                            documenttype = '03';
+                        if ((clientcountry === "PE") && (clientdoctype === "1" || clientdoctype === "4" || clientdoctype === "7")) {
+                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKET", responsedata.id);
+                            documenttype = "03";
                         }
                         else {
-                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE', responsedata.id);
-                            documenttype = '01';
+                            invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICE", responsedata.id);
+                            documenttype = "01";
                         }
 
                         if (invoicecorrelative) {
@@ -3539,14 +2848,14 @@ exports.createInvoice = async (request, response) => {
                                     NombreComercialEmisor: appsetting.tradename,
                                     RazonSocialEmisor: appsetting.businessname,
                                     RazonSocialReceptor: clientbusinessname,
-                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                    CorrelativoDocumento: genericfunctions.padNumber(invoicecorrelative.p_correlative, 8),
                                     RucEmisor: appsetting.ruc,
                                     NumeroDocumentoReceptor: clientdocnumber,
-                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                    NumeroSerieDocumento: documenttype === "01" ? appsetting.invoiceserie : appsetting.ticketserie,
                                     RetornaPdf: appsetting.returnpdf,
                                     RetornaXmlSunat: appsetting.returnxmlsunat,
                                     RetornaXml: appsetting.returnxml,
-                                    TipoCambio: invoicecurrency === 'PEN' ? '1.000' : ((lastExchangeData?.exchangeratesol / lastExchangeData?.exchangerate) || 1),
+                                    TipoCambio: invoicecurrency === "PEN" ? "1.000" : ((lastExchangeData?.exchangeratesol / lastExchangeData?.exchangerate) || 1),
                                     Token: appsetting.token,
                                     DireccionFiscalEmisor: appsetting.fiscaladdress,
                                     DireccionFiscalReceptor: clientfiscaladdress,
@@ -3554,10 +2863,10 @@ exports.createInvoice = async (request, response) => {
                                     VersionUbl: appsetting.ublversion,
                                     Endpoint: appsetting.sunaturl,
                                     PaisRecepcion: clientcountry,
-                                    CodigoOperacionSunat: clientcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother,
-                                    MontoTotalGravado: clientcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null,
-                                    MontoTotalInafecto: clientcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100,
-                                    MontoTotalIgv: clientcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null,
+                                    CodigoOperacionSunat: clientcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother,
+                                    MontoTotalGravado: clientcountry === "PE" ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null,
+                                    MontoTotalInafecto: clientcountry === "PE" ? "0" : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100,
+                                    MontoTotalIgv: clientcountry === "PE" ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null,
                                     ProductList: [],
                                     DataList: []
                                 }
@@ -3566,12 +2875,12 @@ exports.createInvoice = async (request, response) => {
                                     invoicedata.FechaVencimiento = invoiceduedate;
                                 }
 
-                                if (clientcountry === 'PE') {
+                                if (clientcountry === "PE") {
                                     if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
                                         var compareamount = 0;
 
                                         if (appsetting.detractionminimum) {
-                                            if (invoicecurrency !== 'PEN') {
+                                            if (invoicecurrency !== "PEN") {
                                                 compareamount = (invoicetotalcharge / (lastExchangeData?.exchangerate || 0) * (lastExchangeData?.exchangeratesol || 0));
                                             }
                                             else {
@@ -3581,7 +2890,7 @@ exports.createInvoice = async (request, response) => {
 
                                         if (compareamount > appsetting.detractionminimum) {
                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                            invoicedata.CodigoOperacionSunat = '1001';
+                                            invoicedata.CodigoOperacionSunat = "1001";
                                             invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                             invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
                                             invoicedata.MontoTotalInafecto = null;
@@ -3590,8 +2899,8 @@ exports.createInvoice = async (request, response) => {
                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                             var adicional02 = {
-                                                CodigoDatoAdicional: '06',
-                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                CodigoDatoAdicional: "06",
+                                                DescripcionDatoAdicional: "CUENTA DE DETRACCION: " + appsetting.detractionaccount
                                             }
 
                                             invoicedata.DataList.push(adicional02);
@@ -3603,7 +2912,7 @@ exports.createInvoice = async (request, response) => {
                                     var invoicedetaildata = {
                                         CantidadProducto: element.productquantity,
                                         CodigoProducto: element.productcode,
-                                        TipoVenta: '10',
+                                        TipoVenta: "10",
                                         UnidadMedida: element.productmeasure,
                                         IgvTotal: Math.round((element.producttotaligv + Number.EPSILON) * 100) / 100,
                                         MontoTotal: Math.round((element.producttotalamount + Number.EPSILON) * 100) / 100,
@@ -3620,15 +2929,15 @@ exports.createInvoice = async (request, response) => {
                                 });
 
                                 var adicional01 = {
-                                    CodigoDatoAdicional: '05',
-                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                    CodigoDatoAdicional: "05",
+                                    DescripcionDatoAdicional: "FORMA DE PAGO: TRANSFERENCIA"
                                 }
 
                                 invoicedata.DataList.push(adicional01);
 
                                 if (invoicepurchaseorder) {
                                     var adicional03 = {
-                                        CodigoDatoAdicional: '15',
+                                        CodigoDatoAdicional: "15",
                                         DescripcionDatoAdicional: invoicepurchaseorder
                                     }
 
@@ -3637,7 +2946,7 @@ exports.createInvoice = async (request, response) => {
 
                                 if (invoicecomments) {
                                     var adicional04 = {
-                                        CodigoDatoAdicional: '07',
+                                        CodigoDatoAdicional: "07",
                                         DescripcionDatoAdicional: invoicecomments
                                     }
 
@@ -3646,78 +2955,78 @@ exports.createInvoice = async (request, response) => {
 
                                 if (clientcredittype) {
                                     var adicional05 = {
-                                        CodigoDatoAdicional: '01',
-                                        DescripcionDatoAdicional: 'AL CONTADO'
+                                        CodigoDatoAdicional: "01",
+                                        DescripcionDatoAdicional: "AL CONTADO"
                                     }
 
                                     switch (clientcredittype) {
-                                        case 'typecredit_15':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 15 DIAS';
+                                        case "typecredit_15":
+                                            adicional05.DescripcionDatoAdicional = "CREDITO A 15 DIAS";
                                             break;
-                                        case 'typecredit_30':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 30 DIAS';
+                                        case "typecredit_30":
+                                            adicional05.DescripcionDatoAdicional = "CREDITO A 30 DIAS";
                                             break;
-                                        case 'typecredit_45':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 45 DIAS';
+                                        case "typecredit_45":
+                                            adicional05.DescripcionDatoAdicional = "CREDITO A 45 DIAS";
                                             break;
-                                        case 'typecredit_60':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 60 DIAS';
+                                        case "typecredit_60":
+                                            adicional05.DescripcionDatoAdicional = "CREDITO A 60 DIAS";
                                             break;
-                                        case 'typecredit_90':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 90 DIAS';
+                                        case "typecredit_90":
+                                            adicional05.DescripcionDatoAdicional = "CREDITO A 90 DIAS";
                                             break;
-                                        case 'typecredit_7':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 7 DIAS';
+                                        case "typecredit_7":
+                                            adicional05.DescripcionDatoAdicional = "CREDITO A 7 DIAS";
                                             break;
-                                        case 'typecredit_180':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 180 DIAS';
+                                        case "typecredit_180":
+                                            adicional05.DescripcionDatoAdicional = "CREDITO A 180 DIAS";
                                             break;
                                     }
 
                                     invoicedata.DataList.push(adicional05);
 
                                     if (adicional05) {
-                                        if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                        if (adicional05.DescripcionDatoAdicional === "AL CONTADO") {
                                             invoicedata.FechaVencimiento = null;
                                         }
                                     }
                                 }
 
-                                if (appsetting?.invoiceprovider === 'MIFACT') {
+                                if (appsetting?.invoiceprovider === "MIFACT") {
                                     const requestSendToSunat = await axiosObservable({
                                         data: invoicedata,
-                                        method: 'post',
+                                        method: "post",
                                         url: `${bridgeEndpoint}processmifact/sendinvoice`,
                                         _requestid: responsedata.id,
                                     });
 
                                     if (requestSendToSunat.data.result) {
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "INVOICED", null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'successinvoiced', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, "successinvoiced", 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                        if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
-                                            await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                        if ((clientcountry === "PE") && (clientdoctype === "1" || clientdoctype === "4" || clientdoctype === "7")) {
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                         }
                                         else {
-                                            await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "createdbutnotinvoiced", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
-                                else if (appsetting?.invoiceprovider === 'SIIGO') {
+                                else if (appsetting?.invoiceprovider === "SIIGO") {
                                     invoicedata.TipoDocumentoSiigo = "FV";
-                                    invoicedata.TipoCambio = invoicecurrency === 'COP' ? '1.000' : ((lastExchangeData?.exchangeratecop / lastExchangeData?.exchangerate) || 1);
+                                    invoicedata.TipoCambio = invoicecurrency === "COP" ? "1.000" : ((lastExchangeData?.exchangeratecop / lastExchangeData?.exchangerate) || 1);
                                     invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
 
-                                    const corp = await getCorporation(corpid, responsedata.id);
-                                    const org = await getOrganization(corpid, orgid, responsedata.id);
+                                    const corp = await genericfunctions.getCorporation(corpid, responsedata.id);
+                                    const org = await genericfunctions.getOrganization(corpid, orgid, responsedata.id);
 
                                     invoicedata.CityCountry = corp.billbyorg ? org.countrycode : corp.countrycode;
                                     invoicedata.CityState = corp.billbyorg ? org.statecode : corp.statecode;
@@ -3725,7 +3034,7 @@ exports.createInvoice = async (request, response) => {
 
                                     const requestSendToSiigo = await axiosObservable({
                                         data: invoicedata,
-                                        method: 'post',
+                                        method: "post",
                                         url: `${bridgeEndpoint}processsiigo/sendinvoice`,
                                         _requestid: responsedata.id,
                                     });
@@ -3737,22 +3046,22 @@ exports.createInvoice = async (request, response) => {
                                             correlativeOverride = parseInt(`${requestSendToSiigo.data.result.correlativoCpe}`);
                                         }
 
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "INVOICED", null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'successinvoiced', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, "successinvoiced", 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                        await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                        if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
-                                            await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                        if ((clientcountry === "PE") && (clientdoctype === "1" || clientdoctype === "4" || clientdoctype === "7")) {
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "TICKETERROR", responsedata.id);
                                         }
                                         else {
-                                            await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceResponse.invoiceid, "INVOICEERROR", responsedata.id);
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "createdbutnotinvoiced", responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
@@ -3760,36 +3069,36 @@ exports.createInvoice = async (request, response) => {
                             catch (exception) {
                                 printException(exception, request.originalUrl, responsedata.id);
 
-                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", exception.message, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "createdbutnotinvoiced", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, "ERROR", "Correlative not found", null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlativenotfound', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlativenotfound", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'errorcreatinginvoice', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "errorcreatinginvoice", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'appsettingnotfound', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "appsettingnotfound", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'productdetailnotfound', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "productdetailnotfound", responsedata.status, responsedata.success);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
         else {
-            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'corporationnotfound', responsedata.status, responsedata.success);
+            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "corporationnotfound", responsedata.status, responsedata.success);
             return response.status(responsedata.status).json(responsedata);
         }
     } catch (exception) {
@@ -3809,12 +3118,12 @@ exports.emitInvoice = async (request, response) => {
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        const invoice = await getInvoice(corpid, orgid, userid, invoiceid, responsedata.id);
+        const invoice = await genericfunctions.getInvoice(corpid, orgid, userid, invoiceid, responsedata.id);
 
         if (invoice) {
             if (invoice.invoicestatus !== "INVOICED") {
-                const corp = await getCorporation(corpid, responsedata.id);
-                const org = await getOrganization(corpid, orgid, responsedata.id);
+                const corp = await genericfunctions.getCorporation(corpid, responsedata.id);
+                const org = await genericfunctions.getOrganization(corpid, orgid, responsedata.id);
 
                 var correctcorrelative = false;
                 var proceedpayment = false;
@@ -3826,7 +3135,7 @@ exports.emitInvoice = async (request, response) => {
 
                         if (org) {
                             if (org.docnum && org.doctype && org.businessname && org.fiscaladdress && org.sunatcountry) {
-                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
                                     correctcorrelative = true;
                                 }
                                 else {
@@ -3837,23 +3146,23 @@ exports.emitInvoice = async (request, response) => {
                                     proceedpayment = true;
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlative not found', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlative not found", responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete organization', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete organization", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete organization', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete organization", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
                         if (corp.docnum && corp.doctype && corp.businessname && corp.fiscaladdress && corp.sunatcountry) {
-                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                            if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
                                 correctcorrelative = true;
                             }
                             else {
@@ -3864,48 +3173,48 @@ exports.emitInvoice = async (request, response) => {
                                 proceedpayment = true;
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlative not found', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlative not found", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete corporation', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete corporation", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
 
                     if (proceedpayment) {
-                        const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid, responsedata.id);
-                        const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
+                        const invoicedetail = await genericfunctions.getInvoiceDetail(corpid, orgid, userid, invoiceid, responsedata.id);
+                        const appsetting = await genericfunctions.getAppSettingSingle(corpid, orgid, responsedata.id);
 
                         if (invoicedetail && appsetting) {
                             var invoicecorrelative = null;
                             var documenttype = null;
 
                             if (corp.billbyorg) {
-                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                    documenttype = '03';
+                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKET", responsedata.id);
+                                    documenttype = "03";
                                 }
                                 else {
-                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                    documenttype = '01';
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICE", responsedata.id);
+                                    documenttype = "01";
                                 }
                             }
                             else {
-                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                    documenttype = '03';
+                                if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKET", responsedata.id);
+                                    documenttype = "03";
                                 }
                                 else {
-                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                    documenttype = '01';
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICE", responsedata.id);
+                                    documenttype = "01";
                                 }
                             }
 
                             if (invoicecorrelative) {
                                 try {
-                                    var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+                                    var exchangeratedata = await genericfunctions.getExchangeRate(invoice.currency, responsedata.id);
 
                                     var expirationDate;
 
@@ -3915,7 +3224,7 @@ exports.emitInvoice = async (request, response) => {
                                             days = "0";
                                         }
 
-                                        expirationDate = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(days)))).toISOString().substring(0, 10);
+                                        expirationDate = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0]).getDate() + (Number.parseFloat(days)))).toISOString().substring(0, 10);
                                     }
 
                                     var invoicedata = {
@@ -3928,21 +3237,21 @@ exports.emitInvoice = async (request, response) => {
                                         CodigoRucReceptor: billbyorg ? org.doctype : corp.doctype,
                                         CodigoUbigeoEmisor: appsetting.ubigeo,
                                         EnviarSunat: billbyorg ? org.autosendinvoice : corp.autosendinvoice,
-                                        FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                        FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split("T")[0],
                                         FechaVencimiento: expirationDate,
                                         MailEnvio: billbyorg ? org.contactemail : corp.contactemail,
                                         MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
                                         NombreComercialEmisor: appsetting.tradename,
                                         RazonSocialEmisor: appsetting.businessname,
                                         RazonSocialReceptor: billbyorg ? org.businessname : corp.businessname,
-                                        CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                        CorrelativoDocumento: genericfunctions.padNumber(invoicecorrelative.p_correlative, 8),
                                         RucEmisor: appsetting.ruc,
                                         NumeroDocumentoReceptor: billbyorg ? org.docnum : corp.docnum,
-                                        NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                        NumeroSerieDocumento: documenttype === "01" ? appsetting.invoiceserie : appsetting.ticketserie,
                                         RetornaPdf: appsetting.returnpdf,
                                         RetornaXmlSunat: appsetting.returnxmlsunat,
                                         RetornaXml: appsetting.returnxml,
-                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                        TipoCambio: invoice.currency === "PEN" ? "1.000" : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                         Token: appsetting.token,
                                         DireccionFiscalEmisor: appsetting.fiscaladdress,
                                         DireccionFiscalReceptor: billbyorg ? org.fiscaladdress : corp.fiscaladdress,
@@ -3955,27 +3264,27 @@ exports.emitInvoice = async (request, response) => {
                                     }
 
                                     if (corp.billbyorg) {
-                                        invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                        invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                        invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                        invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                        invoicedata.CodigoOperacionSunat = org.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                        invoicedata.MontoTotalGravado = org.sunatcountry === "PE" ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                        invoicedata.MontoTotalInafecto = org.sunatcountry === "PE" ? "0" : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                        invoicedata.MontoTotalIgv = org.sunatcountry === "PE" ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                     }
                                     else {
-                                        invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                        invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                        invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                        invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                        invoicedata.CodigoOperacionSunat = corp.sunatcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                        invoicedata.MontoTotalGravado = corp.sunatcountry === "PE" ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                        invoicedata.MontoTotalInafecto = corp.sunatcountry === "PE" ? "0" : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                        invoicedata.MontoTotalIgv = corp.sunatcountry === "PE" ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                     }
 
                                     var calcdetraction = false;
 
                                     if (corp.billbyorg) {
-                                        if (org.sunatcountry === 'PE') {
+                                        if (org.sunatcountry === "PE") {
                                             calcdetraction = true;
                                         }
                                     }
                                     else {
-                                        if (corp.sunatcountry === 'PE') {
+                                        if (corp.sunatcountry === "PE") {
                                             calcdetraction = true;
                                         }
                                     }
@@ -3985,7 +3294,7 @@ exports.emitInvoice = async (request, response) => {
                                             var compareamount = 0;
 
                                             if (appsetting.detractionminimum) {
-                                                if (invoice.currency !== 'PEN') {
+                                                if (invoice.currency !== "PEN") {
                                                     if (exchangeratedata) {
                                                         compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
                                                     }
@@ -3997,7 +3306,7 @@ exports.emitInvoice = async (request, response) => {
 
                                             if (compareamount > appsetting.detractionminimum) {
                                                 invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                invoicedata.CodigoOperacionSunat = '1001';
+                                                invoicedata.CodigoOperacionSunat = "1001";
                                                 invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                 invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
                                                 invoicedata.MontoTotalInafecto = null;
@@ -4006,8 +3315,8 @@ exports.emitInvoice = async (request, response) => {
                                                 invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                 var adicional02 = {
-                                                    CodigoDatoAdicional: '06',
-                                                    DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                    CodigoDatoAdicional: "06",
+                                                    DescripcionDatoAdicional: "CUENTA DE DETRACCION: " + appsetting.detractionaccount
                                                 }
 
                                                 invoicedata.DataList.push(adicional02);
@@ -4031,12 +3340,12 @@ exports.emitInvoice = async (request, response) => {
                                         };
 
                                         if (corp.billbyorg) {
-                                            invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
-                                            invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                            invoicedetaildata.AfectadoIgv = org.sunatcountry === "PE" ? "10" : "40";
+                                            invoicedetaildata.TributoIgv = org.sunatcountry === "PE" ? "1000" : "9998";
                                         }
                                         else {
-                                            invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
-                                            invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                            invoicedetaildata.AfectadoIgv = corp.sunatcountry === "PE" ? "10" : "40";
+                                            invoicedetaildata.TributoIgv = corp.sunatcountry === "PE" ? "1000" : "9998";
                                         }
 
                                         invoicedata.ProductList.push(invoicedetaildata);
@@ -4044,7 +3353,7 @@ exports.emitInvoice = async (request, response) => {
 
                                     if (invoice.purchaseorder) {
                                         var adicional03 = {
-                                            CodigoDatoAdicional: '15',
+                                            CodigoDatoAdicional: "15",
                                             DescripcionDatoAdicional: invoice.purchaseorder
                                         }
 
@@ -4053,7 +3362,7 @@ exports.emitInvoice = async (request, response) => {
 
                                     if (invoice.comments) {
                                         var adicional04 = {
-                                            CodigoDatoAdicional: '07',
+                                            CodigoDatoAdicional: "07",
                                             DescripcionDatoAdicional: invoice.comments
                                         }
 
@@ -4067,60 +3376,60 @@ exports.emitInvoice = async (request, response) => {
                                         }
 
                                         var adicional05 = {
-                                            CodigoDatoAdicional: '01',
-                                            DescripcionDatoAdicional: days === '0' ? 'AL CONTADO' : `CREDITO A ${days} DIAS`
+                                            CodigoDatoAdicional: "01",
+                                            DescripcionDatoAdicional: days === "0" ? "AL CONTADO" : `CREDITO A ${days} DIAS`
                                         }
 
                                         invoicedata.DataList.push(adicional05);
 
                                         if (adicional05) {
-                                            if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                            if (adicional05.DescripcionDatoAdicional === "AL CONTADO") {
                                                 invoicedata.FechaVencimiento = null;
                                             }
                                         }
                                     }
 
-                                    if (appsetting?.invoiceprovider === 'MIFACT') {
+                                    if (appsetting?.invoiceprovider === "MIFACT") {
                                         const requestSendToSunat = await axiosObservable({
                                             data: invoicedata,
-                                            method: 'post',
+                                            method: "post",
                                             url: `${bridgeEndpoint}processmifact/sendinvoice`,
                                             _requestid: responsedata.id,
                                         });
 
                                         if (requestSendToSunat.data.result) {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "INVOICED", null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                            responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, "successinvoiced", 200, true);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                         else {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                             if (corp.billbyorg) {
-                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                 }
                                                 else {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                 }
                                             }
                                             else {
-                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                 }
                                                 else {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                 }
                                             }
 
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestSendToSunat.data.operationMessage || 'invoicing error', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestSendToSunat.data.operationMessage || "invoicing error", responsedata.status, responsedata.success);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
-                                    else if (appsetting?.invoiceprovider === 'SIIGO') {
+                                    else if (appsetting?.invoiceprovider === "SIIGO") {
                                         invoicedata.TipoDocumentoSiigo = "FV";
-                                        invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
+                                        invoicedata.TipoCambio = invoice.currency === "COP" ? "1.000" : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                         invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
                                         invoicedata.CityCountry = corp.billbyorg ? org.countrycode : corp.countrycode;
                                         invoicedata.CityState = corp.billbyorg ? org.statecode : corp.statecode;
@@ -4128,7 +3437,7 @@ exports.emitInvoice = async (request, response) => {
 
                                         const requestSendToSiigo = await axiosObservable({
                                             data: invoicedata,
-                                            method: 'post',
+                                            method: "post",
                                             url: `${bridgeEndpoint}processsiigo/sendinvoice`,
                                             _requestid: responsedata.id,
                                         });
@@ -4140,32 +3449,32 @@ exports.emitInvoice = async (request, response) => {
                                                 correlativeOverride = parseInt(`${requestSendToSiigo.data.result.correlativoCpe}`);
                                             }
 
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
+                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "INVOICED", null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, responsedata.id);
 
-                                            responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSiigo.data.result, 'successinvoiced', 200, true);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSiigo.data.result, "successinvoiced", 200, true);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                         else {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                            await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                             if (corp.billbyorg) {
-                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                 }
                                                 else {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                 }
                                             }
                                             else {
-                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                                 }
                                                 else {
-                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                    await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                                 }
                                             }
 
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestSendToSiigo.data.operationMessage || 'invoicing error', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestSendToSiigo.data.operationMessage || "invoicing error", responsedata.status, responsedata.success);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
@@ -4173,58 +3482,58 @@ exports.emitInvoice = async (request, response) => {
                                 catch (exception) {
                                     printException(exception, request.originalUrl, responsedata.id);
 
-                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                    await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
                                     if (corp.billbyorg) {
-                                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                            await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                        if ((org.sunatcountry === "PE") && (org.doctype === "1" || org.doctype === "4" || org.doctype === "7")) {
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                         }
                                         else {
-                                            await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                         }
                                     }
                                     else {
-                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                            await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                        if ((corp.sunatcountry === "PE") && (corp.doctype === "1" || corp.doctype === "4" || corp.doctype === "7")) {
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "TICKETERROR", responsedata.id);
                                         }
                                         else {
-                                            await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                            await genericfunctions.getCorrelative(corpid, orgid, invoiceid, "INVOICEERROR", responsedata.id);
                                         }
                                     }
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'general exception', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "general exception", responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                             }
                             else {
-                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
+                                await genericfunctions.invoiceSunat(corpid, orgid, invoiceid, "ERROR", "Correlative not found", null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, responsedata.id);
 
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlative not found', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "correlative not found", responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'no product details', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "no product details", responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'incomplete payment card information', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "incomplete payment card information", responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'corporation not found', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "corporation not found", responsedata.status, responsedata.success);
                     return response.status(responsedata.status).json(responsedata);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoice already sent', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invoice already sent", responsedata.status, responsedata.success);
                 return response.status(responsedata.status).json(responsedata);
             }
         }
         else {
-            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoice not found', responsedata.status, responsedata.success);
+            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, "invoice not found", responsedata.status, responsedata.success);
             return response.status(responsedata.status).json(responsedata);
         }
     } catch (exception) {
@@ -4241,19 +3550,22 @@ exports.getExchangeRate = async (request, response) => {
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        var lastExchangeData = await getExchangeRate(request?.body?.code || 'USD', responsedata.id);
+        var lastExchangeData = await genericfunctions.getExchangeRate(request?.body?.code || "USD", responsedata.id);
         var lastExchange = lastExchangeData?.exchangerate || 0;
         var lastExchangeSol = lastExchangeData?.exchangeratesol || 0;
+        var lastExchangeCop = lastExchangeData?.exchangeratecop || 0;
 
         if (lastExchange) {
-            responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'success', 200, true);
+            responsedata = genericfunctions.changeResponseData(responsedata, null, {}, "success", 200, true);
             responsedata.exchangerate = lastExchange;
             responsedata.exchangeratesol = lastExchangeSol;
+            responsedata.exchangeratecop = lastExchangeCop;
         }
         else {
-            responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'error', 400, false);
+            responsedata = genericfunctions.changeResponseData(responsedata, null, {}, "error", 400, false);
             responsedata.exchangerate = lastExchange;
             responsedata.exchangeratesol = lastExchangeSol;
+            responsedata.exchangeratecop = lastExchangeCop;
         }
 
         return response.status(responsedata.status).json(responsedata);
@@ -4274,9 +3586,9 @@ exports.regularizeInvoice = async (request, response) => {
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        await changeInvoicePayment(corpid, orgid, invoiceid, 'PAID', invoicepaymentnote, invoicereferencefile, invoicepaymentcommentary, usr, responsedata.id);
+        await genericfunctions.changeInvoicePayment(corpid, orgid, invoiceid, "PAID", invoicepaymentnote, invoicereferencefile, invoicepaymentcommentary, usr, responsedata.id);
 
-        responsedata = genericfunctions.changeResponseData(responsedata, null, { message: "finished process" }, 'success', 200, true);
+        responsedata = genericfunctions.changeResponseData(responsedata, null, { message: "finished process" }, "success", 200, true);
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         return response.status(500).json({

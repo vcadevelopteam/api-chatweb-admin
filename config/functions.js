@@ -1,7 +1,7 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.company, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
+        SELECT us.company, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         FROM usr us
         INNER JOIN orguser ous ON ous.userid = us.userid
         INNER JOIN org org ON org.orgid = ous.orgid
@@ -13,7 +13,7 @@ module.exports = {
         WHERE us.usr = $usr AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         LIMIT 1`,
         module: "",
         protected: false
@@ -28,7 +28,7 @@ module.exports = {
         SELECT us.company, us.languagesettings, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid,
 		us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,
 		string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
-		cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
+		cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         from usr us
         INNER JOIN orguser ous on ous.userid = us.userid
         INNER JOIN org org on org.orgid = ous.orgid
@@ -41,7 +41,7 @@ module.exports = {
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         LIMIT 1`,
         module: "",
         protected: false
@@ -54,7 +54,7 @@ module.exports = {
         ous.groups, ous.redirect, pp.plan, COALESCE(cur.symbol, 'S/') currencysymbol,
         COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
         cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision,
-        string_agg(role.description,',') roledesc, corp.partnerid
+        string_agg(role.description,',') roledesc, corp.partnerid, ous.channels
         from usr us
         INNER JOIN orguser ous on ous.userid = us.userid
         INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency
@@ -65,7 +65,7 @@ module.exports = {
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         LIMIT 1`,
         module: "",
         protected: false
@@ -80,7 +80,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_NEW_GETCHANNELS: {
-        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI', 'FBWA', 'INST') AND cc.status = 'INACTIVO'",
+        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.status = 'ACTIVO'",
         module: "/extras/users",
         protected: "SELECT"
     },
@@ -139,7 +139,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_STORE_SEL: {
-        query: "SELECT * FROM ufn_store_sel($id, $all)",
+        query: "SELECT * FROM ufn_store_sel($corpid, $orgid, $id, $all)",
         module: "/extras/users",
         protected: "SELECT"
     },
@@ -582,6 +582,11 @@ module.exports = {
     },
     UFN_CONVERSATIONCLASSIFICATION_INS_MASSIVE: {
         query: "SELECT * FROM ufn_conversationclassification_ins_massive($conversationid, $classificationid, $username)",
+        module: ["/tickets"],
+        protected: "SELECT"
+    },
+    UFN_INTELLIGENTMODELSCONFIGURATION_MASSIVE_DEL: {
+        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_massive_del($corpid, $orgid, $ids, $username)",
         module: ["/tickets"],
         protected: "SELECT"
     },
@@ -1585,8 +1590,8 @@ module.exports = {
         module: ["/reports", "/dashboard"],
         protected: "SELECT"
     },
-    UFN_CREATEZYXMEACCOUNT_INS: {
-        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $join_reason, $rolecompany, $companysize, $organizationname, $paymentplanid, $currency, $country, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $timezoneoffset, $timezone)",
+    UFN_LARAIGOSUBSCRIPTION_INS: {
+        query: "SELECT * FROM ufn_laraigosubscription_ins($loginusername, $loginfacebookid, $logingoogleid, $loginpassword, $contactdocumenttype, $contactdocumentnumber, $contactfirstname, $contactlastname, $contactmail, $contactphone, $contactcountry, $contactcurrency, $companytype, $companybusinessname, $companytradename, $companyaddress, $companyfiscalidentifier, $billingpaymentplanid, $billingsendinvoice, $billingpaymentmethod, $billingautomaticpayment, $billingautomaticperiod, $billingautomaticinvoice, $billingappsettingid, $billingcityid, $timezonename, $timezoneoffset)",
         module: "",
         protected: "INSERT"
     },
@@ -1636,7 +1641,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELSCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $parameters)",
+        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $intelligentmodelsid, $connectortype, $firstinteraccion, $originanalysis, $model, $translation, $language, $context, $precision)",
         module: ["/iaconfigurations"],
         protected: "INSERT"
     },
@@ -1948,7 +1953,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_PCC_INS: {
-        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation, $variablecontext)",
+        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation, $variablecontext, $age, $salary, $clientnumber, $contact, $country, $province, $region, $addressreference, $latitude, $longitude, $postalcode, $addressnumber, $floor_number, $ubigeocode, $address_book, $nickname)",
         module: ["/person"],
         protected: "SELECT"
     },
@@ -2004,6 +2009,26 @@ module.exports = {
     },
     UFN_LEAD_SEL: {
         query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $ordertype, $orderby, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_FUNNEL_SEL: {
+        query: "select * from ufn_lead_funnel_sel($corpid, $orgid, $startdate, $enddate, $channel, $userid, $leadproduct)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_REPORT_SEL: {
+        query: "select * from ufn_lead_report_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_REPORT_GRAPHIC_SEL: {
+        query: "select * from ufn_lead_report_graphic_sel($corpid, $orgid, $column, $summarization, $communicationchannel, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_REPORT_PRODUCT_SEL: {
+        query: "select * from ufn_lead_report_product_sel($corpid, $orgid, $username)",
         module: "",
         protected: "SELECT"
     },
@@ -2404,8 +2429,26 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_DOCUMENT_BY_ASSISTANTID: {
+        query: `select ad.url, ad.description filename from assistantai ai
+        JOIN assistantaidocument ad ON ad.corpid = ai.corpid and ad.orgid = ai.orgid and ad.assistantaiid = ai.assistantaiid
+        where ai.code = :assistantid
+        and ad.fileid IN (:files)`,
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_SEL_PROPERTY_ENV_ON_LOGIN: {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.propertyname = 'AMBIENTE' and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE: {
+        query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.orgid = $orgid AND p.propertyname = $propertyname and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_BALANCE_ON_LOGIN: {
+        query: "SELECT og.balance, og.balancedate, og.balanceby, cp.paymentmethod FROM org og LEFT JOIN corp cp ON og.corpid = cp.corpid WHERE og.corpid = $corpid AND og.orgid = $orgid;",
         module: "",
         protected: "SELECT"
     },
@@ -2658,12 +2701,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGMESSAGING_INS: {
-        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation, $countrycode, $plancurrency, $minimumquantitysms, $fixedfeesms, $minimumquantitymail, $fixedfeemail, $priceperchatweb, $vcacomissionperchatweb, $minimumquantitychatweb, $fixedfeechatweb, $priceperfacebook, $vcacomissionperfacebook, $minimumquantityfacebook, $fixedfeefacebook, $pricepermybusiness, $vcacomissionpermybusiness, $minimumquantitymybusiness, $fixedfeemybusiness, $priceperinstagram, $vcacomissionperinstagram, $minimumquantityinstagram, $fixedfeeinstagram, $priceperinstagramdm, $vcacomissionperinstagramdm, $minimumquantityinstagramdm, $fixedfeeinstagramdm, $pricepermessenger, $vcacomissionpermessenger, $minimumquantitymessenger, $fixedfeemessenger, $pricepertelegram, $vcacomissionpertelegram, $minimumquantitytelegram, $fixedfeetelegram, $pricepertiktok, $vcacomissionpertiktok, $minimumquantitytiktok, $fixedfeetiktok, $pricepervoice, $vcacomissionpervoice, $minimumquantityvoice, $fixedfeevoice, $pricepertwitter, $vcacomissionpertwitter, $minimumquantitytwitter, $fixedfeetwitter, $priceperyoutube, $vcacomissionperyoutube, $minimumquantityyoutube, $fixedfeeyoutube)",
         module: ["/billing_setups"],
         protected: "INSERT"
     },
     UFN_BILLINGMESSAGING_SEL: {
-        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month)",
+        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month, $countrycode)",
         module: ["/billing_setups"],
     },
     UFN_REPORT_PERSONALIZED_ORIGIN_SEL: {
@@ -2797,7 +2840,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLING_REPORT_CONVERSATIONWHATSAPP: {
-        query: "SELECT * FROM ufn_billing_report_conversationwhatsapp($corpid, $orgid, $year, $month)",
+        query: "SELECT * FROM ufn_billing_report_conversationwhatsapp($corpid, $orgid, $year, $month, $conversationprovider)",
         module: ["/invoice"],
         protected: "SELECT"
     },
@@ -4601,7 +4644,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_API_ORDER_INS: {
-        query: "SELECT * FROM ufn_api_order_ins($corpid, $orgid, $conversationid, $personid, $personcommunicationchannel, $status, $currency, $amount, $paymentstatus, $paymentref, $deliverytype, $deliveryaddress, $username, $description, $paymentmethod)",
+        query: "SELECT * FROM ufn_api_order_ins($corpid, $orgid, $conversationid, $personid, $personcommunicationchannel, $status, $currency, $amount, $paymentstatus, $paymentref, $deliverytype, $deliveryaddress, $username, $description, $paymentmethod, $additional_info)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_ORDER_COMMENTS_INS: {
+        query: "SELECT * FROM ufn_api_order_comments_ins($orderid, $comment)",
         module: "",
         protected: "SELECT"
     },
@@ -4637,6 +4685,91 @@ module.exports = {
     },
     UFN_API_ORDER_SEL: {
         query: "SELECT * FROM ufn_api_order_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_INTELLIGENTMODELSCONFIGURATION_SEL: {
+        query: "select im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid, w.watsonid from intelligentmodels im left join watson w on w.intelligentmodelsid = im.intelligentmodelsid and w.status = 'ACTIVO' where im.corpid = $corpid and im.orgid = $orgid and im.status = 'ACTIVO' and im.intelligentmodelsid = $id;",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WATSONMODELCONFIGURATION_SEL: {
+        query: "select w.watsonid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from watson w join intelligentmodels im on im.intelligentmodelsid = w.intelligentmodelsid where w.corpid = $corpid and w.orgid = $orgid and watsonid = $watsonid and w.status = 'ACTIVO' and im.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_GET_ITEM_DETAILS: {
+        query: "SELECT * FROM public.ufn_watson_get_item_details($corpid, $orgid, $watsonid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_CONFLICTS_SEL: {
+        query: "SELECT * FROM public.ufn_watson_conflicts_sel($corpid, $orgid, $watsonid, $watsonitemdetailid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ENTITY_MENTIONS_SEL: {
+        query: "SELECT * FROM public.ufn_watson_entity_mentions_sel($corpid, $orgid, $entity_value)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEMS_DETAIL_SEL: {
+        query: "SELECT * FROM public.ufn_watson_items_detail_sel($corpid, $orgid, $watsonitemid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_INSERT_IBM_DATA: {
+        query: "SELECT * FROM public.ufn_watson_insert_ibm_data($corpid, $orgid, $intelligentmodelsid, $watson_description, $watson_language, $watson_intents_count, $watson_entities_count, $intents_json, $entities_json, $hash)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEM_INTENT_INS: {
+        query: "SELECT * FROM public.ufn_watson_item_intent_ins($corpid, $orgid, $watsonid, $watsonitemid, $item_name, $description, $type, $detail_json, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEM_ENTITY_INS: {
+        query: "SELECT * FROM public.ufn_watson_item_entity_ins($corpid, $orgid, $watsonid, $watsonitemid, $item_name, $description, $type, $detail_json, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEM_DEL: {
+        query: "SELECT * FROM public.ufn_watson_item_del($corpid, $orgid, $watsonid, $ids, $type, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_MENTION_INS: {
+        query: "SELECT * FROM public.ufn_watson_mention_ins($corpid, $orgid, $watsonid, $entity, $value, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_CONFLICTS_RESOLVE: {
+        query: "SELECT * FROM public.ufn_watson_conflicts_resolve($corpid, $orgid, $watsonid, $watsonitemdetailids, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_INTENTS_EXPORT: {
+        query: "SELECT * FROM public.ufn_watson_intents_export($corpid, $orgid, $watsonid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ENTITES_EXPORT: {
+        query: "SELECT * FROM public.ufn_watson_entites_export($corpid, $orgid, $watsonid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_MODELS_SEL: {
+        query: "SELECT * FROM public.ufn_watson_models_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEMS_SEL: {
+        query: "SELECT * FROM public.ufn_watson_items_sel($corpid, $orgid, $watsonid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_BULKLOAD_ITEM_INS: {
+        query: "SELECT * FROM public.ufn_watson_bulkload_item_ins($corpid, $orgid, $watsonid, $type, $data, $username)",
         module: "",
         protected: "SELECT"
     },
@@ -4687,7 +4820,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ASSISTANTAI_INS: {
-        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $intelligentmodelsid, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $decoding_method, $username, $operation);",
+        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $intelligentmodelsid, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $decoding_method, $username, $operation, $top_k, $repetition_penalty, $chunk_size, $chunk_overlap);",
         module: "",
         protected: "INSERT"
     },
@@ -4711,6 +4844,27 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_THREAD_LAST: {
+        query: `SELECT STRING_AGG(
+                CASE 
+                    WHEN tt.type = 'USER' THEN 'User: ' || tt.messagetext
+                    WHEN tt.type = 'BOT' THEN 'System: ' || tt.messagetext
+                END, E'\n'
+            ) AS concatenated_messages
+            FROM (
+            SELECT messagetext, type
+            FROM (
+                SELECT messagetext, createdate, type
+                FROM messageai
+                WHERE threadid = $threadid
+                ORDER BY createdate DESC
+                LIMIT 4
+            ) AS subquery
+            ORDER BY createdate ASC
+            ) as tt`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_THREAD_INS: {
         query: "SELECT * FROM ufn_thread_ins($corpid, $orgid, $assistantaiid, $id, $code, $description, $type, $status, $username, $operation);",
         module: "",
@@ -4722,7 +4876,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGEAI_INS: {
-        query: "SELECT * FROM ufn_messageai_ins($corpid, $orgid, $assistantaiid, $threadid, $assistantaidocumentid, $id, $messagetext, $infosource, $type, $status, $username, $operation);",
+        query: "SELECT * FROM ufn_messageai_ins($corpid, $orgid, $assistantaiid, $threadid, $assistantaidocumentid, $id, $messagetext, $infosource, $type, $status, $username, $operation, $tokencount);",
         module: "",
         protected: "INSERT"
     },
@@ -4768,6 +4922,11 @@ module.exports = {
     },
     UFN_APPSETTING_INVOICE_SEL_SINGLE: {
         query: "SELECT * FROM ufn_appsetting_invoice_sel_single($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_APPSETTING_INVOICE_SEL_LOCATION: {
+        query: "SELECT * FROM ufn_appsetting_invoice_sel_location($location)",
         module: "",
         protected: "SELECT"
     },
@@ -4906,6 +5065,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORDER_PREPARE: {
+        query: "SELECT * FROM ufn_order_prepare($corpid, $orgid, $orderids, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ORDERSINSTORE_SEL: {
         query: "SELECT * FROM ufn_ordersinstore_sel($corpid, $orgid)",
         module: "",
@@ -5015,5 +5179,15 @@ module.exports = {
         query: "SELECT * FROM ufn_report_sentmessages_detail_by_identifier($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid, $identifiers)",
         module: "",
         protected: "SELECT"
+    },
+    UPDATE_LANGUAGE_SETTINGS: {
+        query: "SELECT * FROM update_language_settings($userid, $languagesettings)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CLASSIFICATION_INS_ARRAY: {
+        query: "SELECT * FROM ufn_classification_ins_array($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "INSERT"
     },
 }

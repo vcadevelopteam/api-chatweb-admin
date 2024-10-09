@@ -170,7 +170,6 @@ exports.authenticate = async (req, res) => {
             }
             user.code = cur;
         }
-        
         if (!integration) {
             const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
             if (!ispasswordmatch)
@@ -283,12 +282,24 @@ exports.getUser = async (req, res) => {
                 ...prevdata
             }),
             executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION", ...prevdata }),
-            executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user, ...prevdata }),
+            executesimpletransaction("QUERY_SEL_BALANCE_ON_LOGIN", { ...req.user, ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "HABILITARNOTIFICACION_RECARGA", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "SALDONOTIFICACION_RECARGA", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "MENSAJENOTIFICACION_RECARGA", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "SHOWSTARTSCREEN", ...prevdata }),
             ...((firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? [executesimpletransaction("QUERY_NEW_GETCHANNELS", { ...req.user })] : [])
         ]);
+
         const resultBDProperties = resultBD[3];
         const propertyEnv = resultBD[5] instanceof Array && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
-        const newChannels = resultBD[6] instanceof Array && resultBD[6].length > 0 ? true : false;
+        const showBalance = resultBD[6] instanceof Array && resultBD[6].length > 0 ? resultBD[6][0].paymentmethod === "PREPAGO" : false;
+        const balanceCurrent = resultBD[6] instanceof Array && resultBD[6].length > 0 ? (resultBD[6][0].balance || 0) : 0;
+        const balanceNotificationEnabled = resultBD[7] instanceof Array && resultBD[7].length > 0 ? (resultBD[7][0].propertyvalue === "1") : false;
+        const balanceNotificationMinimum = resultBD[8] instanceof Array && resultBD[8].length > 0 ? parseFloat(resultBD[8][0].propertyvalue || "0") : 0;
+        const balanceNotificationMessage = resultBD[9] instanceof Array && resultBD[9].length > 0 ? resultBD[9][0].propertyvalue : "";
+        const showStartScreen = resultBD[10] instanceof Array && resultBD[10].length > 0 ? (resultBD[10][0].propertyvalue === "1") : false;
+        const newChannels = resultBD[11] instanceof Array && resultBD[11].length > 0 ? false : true;
 
         if (!(resultBD[0] instanceof Array)) {
             return res.status(500).json(getErrorCode());
@@ -326,12 +337,19 @@ exports.getUser = async (req, res) => {
                     properties: resultProperties,
                     token,
                     redirect: (firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? "/channels" : req.user.redirect,
-                    newChannels,
+                    newChannels: newChannels && showStartScreen && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x)),
                     organizations: resultBD[1],
-                    notifications: resultBD[2],
+                    notifications: (showBalance && balanceNotificationEnabled && balanceNotificationMessage && (balanceCurrent <= balanceNotificationMinimum)) ? [...resultBD[2], ...[{ duedate: new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split(".")[0].replace("T", " "), notificationtype: "BALANCEALERT", description: balanceNotificationMessage }]] : resultBD[2],
                     domains: {
-                        reasons_disconnection: resultBD[4]
-                    }
+                        reasons_disconnection: resultBD[4],
+                    },
+                    balance: {
+                        balanceCurrent,
+                        balanceNotificationEnabled,
+                        balanceNotificationMessage,
+                        balanceNotificationMinimum,
+                        showBalance,
+                    },
                 }
             });
         })
@@ -409,7 +427,7 @@ exports.IncrementalInvokeToken = async (req, res) => {
             const res = await axiosObservable({
                 method: "post",
                 url: `${process.env.INCREMENTAL_API}auth/incremental/insert/token`,
-                data: { 
+                data: {
                     userid: req.user.userid,
                     token: req.user.token,
                     origin: 'WEB',
@@ -445,6 +463,7 @@ exports.changeOrganization = async (req, res) => {
             domainname: resultBD[0]?.domainname,
             iconurl: resultBD[0]?.iconurl,
             logourl: resultBD[0]?.logourl,
+            channels: resultBD[0]?.channels,
             startlogourl: resultBD[0]?.startlogourl,
             ispoweredbylaraigo: resultBD[0]?.ispoweredbylaraigo,
         };
@@ -522,7 +541,7 @@ exports.samlSso = async (req, res) => {
 exports.samlSuccess = async (req, res) => {
     const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*';
     const token = req.query.token;
-    
+
     if (token) {
         return res.send(`
             <script>

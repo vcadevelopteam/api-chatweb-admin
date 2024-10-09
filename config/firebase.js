@@ -3,10 +3,10 @@ const serviceAccount = require("../zyxmeapp.json");
 const logger = require('./winston');
 const { axiosObservable } = require("./helpers");
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://zyxmeappmovil.firebaseio.com"
-});
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: "https://zyxmeappmovil.firebaseio.com"
+// });
 
 const apns = {
     headers: {
