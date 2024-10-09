@@ -3579,6 +3579,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_MESSAGETEMPLATE_BUTTON: {
+        query: "SELECT buttonsgeneric, buttonsquickreply FROM messagetemplate WHERE corpid = $corpid AND orgid = $orgid AND name = $name AND ($communicationchannelid = ANY(string_to_array(communicationchannelid, ',')::bigint []) OR namespace = $namespace)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_RESET: {
         query: "UPDATE messagetemplate SET status = 'ELIMINADO', changeby = $username, changedate = NOW() WHERE corpid = $corpid AND orgid = $orgid AND type = 'HSM' AND status = 'ACTIVO' AND ($communicationchannelid = ANY(string_to_array(communicationchannelid, ',')::bigint[]) OR namespace = $namespace);",
         module: "",
@@ -5147,6 +5152,31 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_SS_HISTORY: {
         query: "SELECT * FROM ufn_conversation_sel_ss_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LINKREGISTER_SEL: {
+        query: "SELECT * FROM ufn_linkregister_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LINKREGISTER_INS: {
+        query: "SELECT * FROM ufn_linkregister_ins($corpid, $orgid, $linkregisterid, $operation, $description, $url, $status, $startdate, $enddate, $username)",
+        module: "/linkregister",
+        protected: "INSERT"
+    },
+    UFN_REPORTLINK_INS: {
+        query: "SELECT * FROM ufn_reportlink_ins($corpid, $orgid, $messagetemplateid, $historyid, $linkregisterid, $type, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORTCAMPAIGNLINKS_SEL: {
+        query: "SELECT * FROM ufn_report_sentmessages_by_clickurl($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTCAMPAIGNLINKSDETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_sentmessages_detail_by_identifier($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid, $identifiers)",
         module: "",
         protected: "SELECT"
     },
