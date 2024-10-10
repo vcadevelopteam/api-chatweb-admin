@@ -1953,7 +1953,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_PCC_INS: {
-        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation, $variablecontext, $age, $salary, $clientnumber, $contact, $country, $province, $region, $addressreference, $latitude, $longitude, $postalcode, $addressnumber, $floor_number, $ubigeocode, $address_book, $nickname)",
+        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation, $variablecontext, $age, $salary, $clientnumber, $contact, $country, $province, $region, $addressreference, $latitude, $longitude, $postalcode, $addressnumber, $floor_number, $ubigeocode, $address_book, $nickname, $imageurldef)",
         module: ["/person"],
         protected: "SELECT"
     },
@@ -2426,6 +2426,16 @@ module.exports = {
     },
     QUERY_SEL_PROPERTY_ON_LOGIN: {
         query: "SELECT propertyname, propertyvalue, communicationchannelid FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_UICONFIG_ON_LOGIN: {
+        query: "SELECT uiconfigurations FROM org p WHERE p.corpid = $corpid AND p.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORG_UICONFIG_INS: {
+        query: "SELECT * FROM ufn_org_uiconfig_ins($corpid, $orgid, $name, $config, $username);",
         module: "",
         protected: "SELECT"
     },
