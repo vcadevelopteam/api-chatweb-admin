@@ -734,7 +734,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_SEL1: {
         query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, true, 0, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL_OLD: {
@@ -749,7 +749,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS1: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where, true, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS_OLD: {
@@ -5199,5 +5199,15 @@ module.exports = {
         query: "SELECT * FROM ufn_report_sentmessages_detail_by_identifier($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid, $identifiers)",
         module: "",
         protected: "SELECT"
+    },
+    UPDATE_LANGUAGE_SETTINGS: {
+        query: "SELECT * FROM update_language_settings($userid, $languagesettings)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CLASSIFICATION_INS_ARRAY: {
+        query: "SELECT * FROM ufn_classification_ins_array($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "INSERT"
     },
 }
