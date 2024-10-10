@@ -4706,6 +4706,27 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_THREAD_LAST: {
+        query: `SELECT STRING_AGG(
+                CASE 
+                    WHEN tt.type = 'USER' THEN 'User: ' || tt.messagetext
+                    WHEN tt.type = 'BOT' THEN 'System: ' || tt.messagetext
+                END, E'\n'
+            ) AS concatenated_messages
+            FROM (
+            SELECT messagetext, type
+            FROM (
+                SELECT messagetext, createdate, type
+                FROM messageai
+                WHERE threadid = $threadid
+                ORDER BY createdate DESC
+                LIMIT 4
+            ) AS subquery
+            ORDER BY createdate ASC
+            ) as tt`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_THREAD_INS: {
         query: "SELECT * FROM ufn_thread_ins($corpid, $orgid, $assistantaiid, $id, $code, $description, $type, $status, $username, $operation);",
         module: "",
