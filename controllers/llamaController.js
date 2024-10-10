@@ -300,7 +300,7 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, decoding_method, threadid, repetition_penalty, top_k } = req.body;
+    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, decoding_method, project_id, threadid, repetition_penalty, top_k } = req.body;
     
     let context = "";
     if (threadid) {
@@ -321,6 +321,7 @@ exports.query = async (req, res) => {
         temperature: temperature,
         top_p: top_p,
         decoding_method: decoding_method,
+        project_id: project_id,
         context: context || " ",
         repetition_penalty: repetition_penalty,
         top_k: top_k,
