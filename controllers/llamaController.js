@@ -300,7 +300,16 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, decoding_method, project_id } = req.body;
+    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, decoding_method, project_id, threadid, repetition_penalty, top_k } = req.body;
+    
+    let context = "";
+    if (threadid) {
+      const resinteraction = await executesimpletransaction("UFN_THREAD_LAST", { threadid });
+      if (resinteraction instanceof Array && resinteraction.length > 0) {
+        context = resinteraction[0].concatenated_messages;
+      }
+    }
+
     let responseQuery = await axiosObservable({
       data: {
         assistant_name: assistant_name,
@@ -312,7 +321,10 @@ exports.query = async (req, res) => {
         temperature: temperature,
         top_p: top_p,
         decoding_method: decoding_method,
-        project_id: project_id
+        project_id: project_id,
+        context: context || " ",
+        repetition_penalty: repetition_penalty,
+        top_k: top_k,
       },
       headers: {
         Authorization: req.headers.authorization,
