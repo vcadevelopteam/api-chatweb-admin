@@ -3571,7 +3571,7 @@ module.exports = {
     },
     UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP: {
         query: "SELECT * FROM ufn_communicationchannel_sel_whatsapp($corpid, $orgid)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP_PROVIDER: {
