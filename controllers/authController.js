@@ -324,6 +324,9 @@ exports.getUser = async (req, res) => {
                 ]
         }), {})
 
+        const uiConfig = await executesimpletransaction("QUERY_SEL_UICONFIG_ON_LOGIN", {...req.user})
+        req.user.uiconfig = uiConfig[0].uiconfigurations
+
         jwt.sign({ user: { ...req.user, environment: propertyEnv, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;

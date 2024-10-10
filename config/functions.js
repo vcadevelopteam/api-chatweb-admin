@@ -1953,7 +1953,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_PCC_INS: {
-        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation, $variablecontext)",
+        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation, $variablecontext, $age, $salary, $clientnumber, $contact, $country, $province, $region, $addressreference, $latitude, $longitude, $postalcode, $addressnumber, $floor_number, $ubigeocode, $address_book, $nickname, $imageurldef)",
         module: ["/person"],
         protected: "SELECT"
     },
@@ -2426,6 +2426,16 @@ module.exports = {
     },
     QUERY_SEL_PROPERTY_ON_LOGIN: {
         query: "SELECT propertyname, propertyvalue, communicationchannelid FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_UICONFIG_ON_LOGIN: {
+        query: "SELECT uiconfigurations FROM org p WHERE p.corpid = $corpid AND p.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORG_UICONFIG_INS: {
+        query: "SELECT * FROM ufn_org_uiconfig_ins($corpid, $orgid, $name, $config, $username);",
         module: "",
         protected: "SELECT"
     },
@@ -3576,6 +3586,11 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_UPD: {
         query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $categorychange, $firstbuttons, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_BUTTON: {
+        query: "SELECT buttonsgeneric, buttonsquickreply FROM messagetemplate WHERE corpid = $corpid AND orgid = $orgid AND name = $name AND ($communicationchannelid = ANY(string_to_array(communicationchannelid, ',')::bigint []) OR namespace = $namespace)",
         module: "",
         protected: "SELECT"
     },
@@ -5147,6 +5162,31 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_SS_HISTORY: {
         query: "SELECT * FROM ufn_conversation_sel_ss_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LINKREGISTER_SEL: {
+        query: "SELECT * FROM ufn_linkregister_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LINKREGISTER_INS: {
+        query: "SELECT * FROM ufn_linkregister_ins($corpid, $orgid, $linkregisterid, $operation, $description, $url, $status, $startdate, $enddate, $username)",
+        module: "/linkregister",
+        protected: "INSERT"
+    },
+    UFN_REPORTLINK_INS: {
+        query: "SELECT * FROM ufn_reportlink_ins($corpid, $orgid, $messagetemplateid, $historyid, $linkregisterid, $type, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORTCAMPAIGNLINKS_SEL: {
+        query: "SELECT * FROM ufn_report_sentmessages_by_clickurl($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTCAMPAIGNLINKSDETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_sentmessages_detail_by_identifier($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid, $identifiers)",
         module: "",
         protected: "SELECT"
     },
