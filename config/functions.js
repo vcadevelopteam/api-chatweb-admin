@@ -729,7 +729,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_SEL1: {
         query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, true, 0, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL_OLD: {
@@ -744,7 +744,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS1: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where, true, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS_OLD: {
@@ -4983,6 +4983,31 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_SS_HISTORY: {
         query: "SELECT * FROM ufn_conversation_sel_ss_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LINKREGISTER_SEL: {
+        query: "SELECT * FROM ufn_linkregister_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LINKREGISTER_INS: {
+        query: "SELECT * FROM ufn_linkregister_ins($corpid, $orgid, $linkregisterid, $operation, $description, $url, $status, $startdate, $enddate, $username)",
+        module: "/linkregister",
+        protected: "INSERT"
+    },
+    UFN_REPORTLINK_INS: {
+        query: "SELECT * FROM ufn_reportlink_ins($corpid, $orgid, $messagetemplateid, $historyid, $linkregisterid, $type, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORTCAMPAIGNLINKS_SEL: {
+        query: "SELECT * FROM ufn_report_sentmessages_by_clickurl($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTCAMPAIGNLINKSDETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_sentmessages_detail_by_identifier($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid, $identifiers)",
         module: "",
         protected: "SELECT"
     },
