@@ -58,6 +58,7 @@ app.use('/api/ticket', require('./routes/ticket'));
 app.use('/api/gpt', require('./routes/gpt'));
 app.use('/api/llama', require('./routes/llama'));
 app.use('/api/llama3', require('./routes/llama3'));
+app.use('/api/linkcount', require('./routes/linkcount'));
 app.use('/api/main', require('./routes/main'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/load', require('./routes/load'));
@@ -92,6 +93,7 @@ app.use('/api/norkys', require('./routes/norkys'));
 app.use('/api/corp', require('./routes/corp'));
 app.use('/api/delivery', require('./routes/delivery'));
 app.use('/api/proxy', require('./routes/proxy'));
+app.use('/api/watson', require('./routes/watson'));
 //mobile
 app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));

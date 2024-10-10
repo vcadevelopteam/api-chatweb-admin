@@ -22,8 +22,7 @@ RUN apk add --no-cache curl && \
 WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 RUN apk add g++ make py3-pip
-RUN mkdir -p "/home/node/app/.npm"
-RUN chown -R 1000:1000 "/home/node/app/.npm"
+RUN chown -R 1000:1000 /app
 RUN npm cache clean --force
 RUN npm install --${NODE_ENV}
 COPY . .

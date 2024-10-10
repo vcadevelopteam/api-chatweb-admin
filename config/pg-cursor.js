@@ -5,7 +5,7 @@ const XLSX = require('xlsx');
 
 const BATCH_SIZE = 100_000;
 
-const transformCSV = (data, headerClient, _requestid, indexPart, zip) => {
+const transformCSV = (data, headerClient, _requestid, indexPart, zip, reportName) => {
     const formatToExport = "csv";
     const titlefile = "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
 
@@ -41,11 +41,11 @@ const transformCSV = (data, headerClient, _requestid, indexPart, zip) => {
     zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary: true })
 }
 
-const transformExcel = (data, headerClient, _requestid, indexPart, zip) => {
+const transformExcel = (data, headerClient, _requestid, indexPart, zip, reportName) => {
     const titlefile = "Part-" + indexPart + ".xlsx";
 
     const profiler = logger.child({ _requestid }).startTimer();
-    
+
     let keysHeaders;
     const keys = Object.keys(data[0]);
     keysHeaders = keys;
@@ -64,7 +64,7 @@ const transformExcel = (data, headerClient, _requestid, indexPart, zip) => {
         }, {});
         data.unshift(keysHeaders);
     }
-    
+
     const ws = XLSX.utils.json_to_sheet(data, headerClient ? {
         skipHeader: !!headerClient,
     } : undefined);
@@ -77,7 +77,7 @@ const transformExcel = (data, headerClient, _requestid, indexPart, zip) => {
     zip.file(titlefile, excelBuffer)
 }
 
-exports.processCursor = async (cursor, _requestid, headerClient, formatDownload) => {
+exports.processCursor = async (cursor, _requestid, headerClient, formatDownload, reportName) => {
     let indexPart = 1;
     const resultLink = [];
     let zip = null;
@@ -116,9 +116,9 @@ exports.processCursor = async (cursor, _requestid, headerClient, formatDownload)
                     return resolve({ error: false, resultLink });
                 }
                 if (formatDownload === "CSV") {
-                    transformCSV(rows, headerClient, _requestid, indexPart, zip);
+                    transformCSV(rows, headerClient, _requestid, indexPart, zip, reportName);
                 } else {
-                    transformExcel(rows, headerClient, _requestid, indexPart, zip);
+                    transformExcel(rows, headerClient, _requestid, indexPart, zip, reportName);
                 }
 
                 indexPart++;

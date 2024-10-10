@@ -316,7 +316,7 @@ exports.exportWithCursor = async (req, res) => {
 
         const cursor = client.query(new Cursor(query, values));
 
-        const resCursor = await processCursor(cursor, req._requestid, parameters.headerClient, formatDownload);
+        const resCursor = await processCursor(cursor, req._requestid, parameters.headerClient, formatDownload, parameters.reportName || "");
 
         await cursor.close();
 

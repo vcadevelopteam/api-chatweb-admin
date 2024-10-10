@@ -1,14 +1,15 @@
 const { default: axios } = require("axios");
 const { axiosObservable, getErrorCode } = require("../config/helpers");
+const { executesimpletransaction } = require("../config/triggerfunctions");
 
 exports.createThreads = async (req, res) => {
   try {
     const { apikey } = req.body;
     let responseThread = await axiosObservable({
       data: { apikey: apikey },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/threads`,
@@ -38,15 +39,15 @@ exports.deleteThreads = async (req, res) => {
     const { apikey, thread_id } = req.body;
     let responseDeleteThread = await axiosObservable({
       data: { apikey: apikey, thread_id: thread_id },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/threads/delete`,
       _requestid: req._requestid,
     });
-   
+
     if (responseDeleteThread.data && responseDeleteThread.statusText === "OK") {
       return res.json(responseDeleteThread.data);
     }
@@ -74,6 +75,8 @@ exports.createAssistant = async (req, res) => {
       basemodel,
       retrieval,
       codeinterpreter,
+      temperature,
+      top_p,
     } = req.body;
 
     let reponseCreateAssistant = await axiosObservable({
@@ -84,10 +87,12 @@ exports.createAssistant = async (req, res) => {
         basemodel: basemodel,
         retrieval: retrieval,
         codeinterpreter: codeinterpreter,
+        temperature: temperature,
+        top_p: top_p
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/assistants/new`,
@@ -126,6 +131,8 @@ exports.updateAssistant = async (req, res) => {
       retrieval,
       codeinterpreter,
       file_ids,
+      temperature,
+      top_p
     } = req.body;
     let responseUpdateAssistant = await axiosObservable({
       data: {
@@ -137,16 +144,18 @@ exports.updateAssistant = async (req, res) => {
         retrieval: retrieval,
         codeinterpreter: codeinterpreter,
         file_ids: file_ids,
+        temperature: temperature,
+        top_p: top_p
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/assistants/update`,
       _requestid: req._requestid,
     });
-   
+
     if (
       responseUpdateAssistant.data &&
       responseUpdateAssistant.statusText === "OK"
@@ -176,15 +185,15 @@ exports.deleteAssistant = async (req, res) => {
         apikey: apikey,
         assistant_id: assistant_id,
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/assistants/delete`,
       _requestid: req._requestid,
     });
-   
+
     if (
       responseDeleteAssistant.data &&
       responseDeleteAssistant.statusText === "OK"
@@ -217,14 +226,14 @@ exports.messages = async (req, res) => {
         sources: sources,
         apikey: apikey,
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/assistants/messages`,
       _requestid: req._requestid,
-    }); 
+    });
 
     if (responseMessages.data && responseMessages.statusText === "OK") {
       return res.json(responseMessages.data);
@@ -252,15 +261,15 @@ exports.addFile = async (req, res) => {
         files: files,
         apikey: apikey,
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
-      url: `${process.env.GPT_SERVICES}/files`,      
+      url: `${process.env.GPT_SERVICES}/files`,
       _requestid: req._requestid,
-    }); 
-    
+    });
+
     if (responseAddFile.data && responseAddFile.statusText === "OK") {
       return res.json(responseAddFile.data);
     }
@@ -288,15 +297,15 @@ exports.assignFile = async (req, res) => {
         file_ids: file_ids,
         apikey: apikey,
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/assistants/files`,
       _requestid: req._requestid,
-    }); 
-  
+    });
+
     if (responseAssignFile.data && responseAssignFile.statusText === "OK") {
       return res.json(responseAssignFile.data);
     }
@@ -323,15 +332,15 @@ exports.verifyFile = async (req, res) => {
         assistant_id: assistant_id,
         apikey: apikey,
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/assistants/files/list`,
       _requestid: req._requestid,
-    }); 
-   
+    });
+
     if (responseVerifyFile.data && responseVerifyFile.statusText === "OK") {
       return res.json(responseVerifyFile.data);
     }
@@ -358,14 +367,14 @@ exports.deleteFile = async (req, res) => {
         file_ids: file_ids,
         apikey: apikey,
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/files/delete`,
       _requestid: req._requestid,
-    });   
+    });
 
     if (responseDeleteFile.data && responseDeleteFile.statusText === "OK") {
       return res.json(responseDeleteFile.data);
@@ -393,15 +402,15 @@ exports.massiveDelete = async (req, res) => {
         apikey: apikey,
         ids: ids,
       },
-      headers: {   
+      headers: {
         Authorization: req.headers.authorization,
-        "Content-Type": "application/json", 
+        "Content-Type": "application/json",
       },
       method: 'post',
       url: `${process.env.GPT_SERVICES}/assistants/massivedelete`,
       _requestid: req._requestid,
-    });   
-  
+    });
+
     if (
       responseMassiveDelete.data &&
       responseMassiveDelete.statusText === "OK"
@@ -409,6 +418,31 @@ exports.massiveDelete = async (req, res) => {
       return res.json(responseMassiveDelete.data);
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
+exports.files = async (req, res) => {
+  try {
+    const { assistantid, files } = req.body;
+    console.log("Dasdas")
+    const result = await executesimpletransaction("QUERY_SEL_DOCUMENT_BY_ASSISTANTID", undefined, false, {
+      files,
+      assistantid
+    })
+    console.log("result", result)
+    return res.json(result);
+    
   } catch (exception) {
     return res
       .status(500)

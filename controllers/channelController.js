@@ -3418,6 +3418,36 @@ exports.synchronizeTemplate = async (request, response) => {
                                         }
                                     }
 
+                                    if ((buttonGenericData || []).length > 0 || (buttonQuickReplyData || []).length > 0) {
+                                        const existingButtonData = await channelfunctions.messageTemplateButtons(corpid, orgid, templatedata.name || null, communicationchannel.communicationchannelid, templatedata.namespace || null, request._requestid);
+
+                                        if (existingButtonData) {
+                                            if ((existingButtonData.buttonsgeneric || []).length > 0 && (buttonGenericData || []).length > 0) {
+                                                for (const existingButtonGenericData of existingButtonData.buttonsgeneric) {
+                                                    if (existingButtonGenericData.btn) {
+                                                        let foundIndex = buttonGenericData.findIndex(element => element.btn?.text === existingButtonGenericData.btn?.text && element.type === existingButtonGenericData.type);
+
+                                                        if (foundIndex !== -1) {
+                                                            buttonGenericData.splice(foundIndex, 1, existingButtonGenericData);
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if ((existingButtonData.buttonsquickreply || []).length > 0 && (buttonQuickReplyData || []).length > 0) {
+                                                for (const existingButtonQuickReplyData of existingButtonData.buttonsquickreply) {
+                                                    if (existingButtonQuickReplyData.btn) {
+                                                        let foundIndex = buttonQuickReplyData.findIndex(element => element.btn?.text === existingButtonQuickReplyData.btn?.text && element.type === existingButtonQuickReplyData.type);
+
+                                                        if (foundIndex !== -1) {
+                                                            buttonQuickReplyData.splice(foundIndex, 1, existingButtonQuickReplyData);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     await channelfunctions.messageTemplateUpd(
                                         corpid,
                                         orgid,
