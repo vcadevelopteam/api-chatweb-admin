@@ -3764,6 +3764,66 @@ exports.addTemplate = async (request, response) => {
                                             requestMessage = requestCreateMeta.data.operationMessage;
                                         }
                                         break;
+
+                                    case "WHAG":
+                                        const requestCreateGupshup = await axiosObservable({
+                                            _requestid: request._requestid,
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                            data: {
+                                                AppId: channeldata.communicationchannelowner,
+                                                AppName: servicecredentials.app,
+                                                ApiKey: servicecredentials.apiKey,
+                                                TemplateData: templatebody,
+                                                Type: "CREATE",
+                                            },
+                                        });
+
+                                        if (requestCreateGupshup.data.success) {
+                                            let parameters = request.body;
+
+                                            if (parameters.buttonsgeneric) {
+                                                for (var buttondata of parameters.buttonsgeneric) {
+                                                    if (buttondata.type === "URL" && buttondata.btn) {
+                                                        if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
+                                                            buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            parameters.corpid = request.user.corpid;
+                                            parameters.orgid = request.user.orgid;
+                                            parameters.username = request.user.usr;
+                                            parameters.namespace = requestCreateGupshup.data.namespace || null;
+                                            parameters.status = requestCreateGupshup.data.status || null;
+                                            parameters.authenticationdata = parameters.authenticationdata ? JSON.stringify(parameters.authenticationdata) : null;
+                                            parameters.bodyvariables = parameters.bodyvariables ? JSON.stringify(parameters.bodyvariables) : null;
+                                            parameters.buttonsgeneric = (parameters.buttonsgeneric || []).length > 0 ? JSON.stringify(parameters.buttonsgeneric) : null;
+                                            parameters.buttonsquickreply = (parameters.buttonsquickreply || []).length > 0 ? JSON.stringify(parameters.buttonsquickreply) : null;
+                                            parameters.carouseldata = (parameters.carouseldata || []).length > 0 ? JSON.stringify(parameters.carouseldata) : null;
+                                            parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
+                                            parameters.buttons = null;
+                                            parameters.bodyobject = null;
+                                            parameters.categorychange = parameters.categorychange ? true : false;
+                                            parameters.firstbuttons = parameters.firstbuttons || null;
+
+                                            const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
+                                                "UFN_MESSAGETEMPLATE_INS",
+                                                parameters,
+                                            );
+
+                                            if (queryMessageTemplateCreate instanceof Array) {
+                                                createsuccess = true;
+                                            } else {
+                                                requestCode = queryMessageTemplateCreate.code;
+                                                requestMessage = queryMessageTemplateCreate.code;
+                                            }
+                                        } else {
+                                            requestCode = requestCreateGupshup.data.operationMessage;
+                                            requestMessage = requestCreateGupshup.data.operationMessage;
+                                        }
+                                        break;
                                 }
                             }
                         }
@@ -3870,6 +3930,28 @@ exports.deleteTemplate = async (request, response) => {
                                             } else {
                                                 requestCode = requestDeleteMeta.data.operationMessage;
                                                 requestMessage = requestDeleteMeta.data.operationMessage;
+                                            }
+                                            break;
+
+                                        case "WHAG":
+                                            const requestDeleteGupshup = await axiosObservable({
+                                                _requestid: request._requestid,
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                                data: {
+                                                    AppId: channeldata.communicationchannelowner,
+                                                    AppName: servicecredentials.app,
+                                                    ApiKey: servicecredentials.apiKey,
+                                                    TemplateName: messagetemplate.name,
+                                                    Type: "DELETE",
+                                                },
+                                            });
+
+                                            if (requestDeleteGupshup.data.success) {
+                                                deletesuccess = true;
+                                            } else {
+                                                requestCode = requestDeleteGupshup.data.operationMessage;
+                                                requestMessage = requestDeleteGupshup.data.operationMessage;
                                             }
                                             break;
 
