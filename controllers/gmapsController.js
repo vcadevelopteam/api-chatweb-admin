@@ -1,7 +1,7 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { parseString } = require('xml2js');
 const moment = require('moment-timezone');
+const parser = require('xml2js').parseString;
 
 exports.geocode = async (req, res) => {
     const { lat, lng } = req.query;
@@ -24,22 +24,20 @@ exports.geocode = async (req, res) => {
 
 async function parseKMLtoObject(kmlContent) {
     return new Promise((resolve, reject) => {
-    parseString(kmlContent, (err, result) => {
-        if (err) {
-            reject(err);
-        } else {
-            resolve(result);
-        }
-    });
+        parser(kmlContent, (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
     });
 }
 
 function formatCoordinate(coordinate) {
-    const [longitude, latitude] = coordinate.split(',').map(String);
+    const [longitude, latitude] = coordinate.split(',').map(Number);
     if (!isNaN(latitude) && !isNaN(longitude)) {
-        const cleanLongitude = longitude.trim();
-        const cleanLatitude = latitude.trim();
-        return { latitude: cleanLatitude, longitude: cleanLongitude };
+        return { latitude, longitude };
     } else {
         console.error(`Invalid Coordinates: Latitude ${latitude}, Longitude ${longitude}`);
         return null;
@@ -59,37 +57,43 @@ function transformKMLtoJSON(kmlObject) {
             if (folderName && placemarks) {
                 placemarks.forEach((placemark, index) => {
                     const nombre = placemark.name && placemark.name[0];
-                    const coordinates = placemark.Polygon && placemark.Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0];
-
-                    console.log('Folder:', folderName);
-                    console.log('Nombre:', nombre);
-                    console.log('Coordinates:', coordinates);
-
-                    if (nombre == 'ZONA ROJA - Santa Anita 2') {
-                        const x = 2
+                    let coordinates = [];
+                    if (placemark.Polygon) {
+                        coordinates = placemark.Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0]
+                            .trim()
+                            .split(' ')
+                            .map(formatCoordinate)
+                            .filter(coord => coord !== null);
+                    } else if (placemark.Point) {
+                        const [longitude, latitude] = placemark.Point[0].coordinates[0]
+                            .trim()
+                            .split(',')
+                            .map(Number);
+                        coordinates = [{ latitude, longitude }];
                     }
-                    if (nombre && coordinates) {
-                        const storeid = findStoreId(nombre);  
-                        const coordenadas = coordinates.split(' ').map(formatCoordinate).filter(coord => coord !== null);
 
+                    if (nombre && coordinates.length > 1) {
+                        const storeid = findStoreId(nombre);
                         const horario = findSchedule(nombre);
 
                         const newJSON = {
                             id: 0,
                             name: nombre,
-                            storeid: storeid,  
+                            storeid: storeid,
                             schedule: horario,
-                            polygons: coordenadas,
+                            polygons: coordinates,
                             operation: 'INSERT'
                         };
 
                         newFeatures.push(newJSON);
+                        console.log(`Placemark Procesado: ${nombre}, Store ID: ${storeid}, Coordinates Count: ${coordinates.length}`);
+                    } else {
+                        console.error(`Placemark Excluido: ${nombre}, Coordinates: ${coordinates}`);
                     }
                 });
             }
         });
     }
-    console.log('Nuevo JSON:', newFeatures);
     return newFeatures;
 }
 
@@ -587,7 +591,35 @@ function findSchedule(nombre) {
             friday: "12:00-21:30",
             saturday: "12:00-21:30",
             sunday: "12:00-21:30"
-        },         
+        },  
+        //PARA KOKORIKO
+        "REPARTO RESTREPO": {
+            monday: "08:00-20:00",
+            tuesday: "08:00-20:00",
+            wednesday: "08:00-20:00",
+            thursday: "08:00-20:00",
+            friday: "08:00-20:00",
+            saturday: "08:00-20:00",
+            sunday: "08:00-20:00"
+        },   
+        "REPARTO SAN DIEGO": {
+            monday: "08:00-20:00",
+            tuesday: "08:00-20:00",
+            wednesday: "08:00-20:00",
+            thursday: "08:00-20:00",
+            friday: "08:00-20:00",
+            saturday: "08:00-20:00",
+            sunday: "08:00-20:00"
+        },   
+        "REPARTO CAPITAL TOWER": {
+            monday: "11:00-21:00",
+            tuesday: "11:00-21:00",
+            wednesday: "11:00-21:00",
+            thursday: "11:00-21:00",
+            friday: "11:00-21:00",
+            saturday: "11:00-21:00",
+            sunday: "11:00-21:00"
+        },          
     };
 
     const lowerCaseName = removeAccents(nombre.toLowerCase());
@@ -655,6 +687,9 @@ function findStoreId(nombre) {
         "REPARTO VITARTE 2": 164,
         "REPARTO ZARATE": 169,  
         "REPARTO FAUCETT OUTLET": 212,
+        "REPARTO RESTREPO": 11,
+        "REPARTO SAN DIEGO": 12,
+        "REPARTO CAPITAL TOWER": 13,
     };
     
     const lowerCaseName = removeAccents(nombre.toLowerCase());
@@ -686,16 +721,26 @@ exports.polygonsinsertmassive = async (req, res) => {
         const buffer = req.file.buffer;
         const kmlContent = buffer.toString();
         const kmlObject = await parseKMLtoObject(kmlContent);
+        console.log('Parsed KML Object:', kmlObject);
         const transformedJSON = transformKMLtoJSON(kmlObject);
         const formattedJson = JSON.stringify(transformedJSON, null, 2);
-
-        console.log("cantidad", transformedJSON.length);
+        const modifiedJSON = transformedJSON.map(feature => {
+            return {
+                ...feature,
+                polygons: [],
+                coordinatesCountInPolygon: feature.polygons.length
+            };
+        });
+        const modifiedFormattedJson = JSON.stringify(modifiedJSON, null, 2);
+        console.log("JSON transformado:", modifiedFormattedJson);
+        console.log("Cantidad de polígonos detectados:", transformedJSON.length);
 
         await executesimpletransaction("UFN_POLYGONS_INS_ARRAY", { corpid, orgid, username, table: formattedJson });
+        console.log('Polígonos insertados correctamente en db');
 
         return res.json({ corpid, orgid });
     } catch (error) {
-        console.log(error);
+        console.error('Error en polygonsinsertmassive:', error);
         return res.status(500).json({ error: 'Error en el servidor' });
     }
 }
