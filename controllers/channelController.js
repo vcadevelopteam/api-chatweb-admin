@@ -3521,6 +3521,8 @@ exports.addTemplate = async (request, response) => {
                                 const servicecredentials = JSON.parse(channeldata.servicecredentials);
 
                                 let createbody = {
+                                    AppId: channeldata.communicationchannelowner,
+                                    AppName: servicecredentials.app,
                                     ApiKey: servicecredentials.apiKey,
                                     Body: { Text: request.body.body },
                                     Category: request.body.category,
@@ -3599,6 +3601,50 @@ exports.addTemplate = async (request, response) => {
                                     } else {
                                         requestCode = requestCreateDialog.data.operationMessage;
                                         requestMessage = requestCreateDialog.data.operationMessage;
+                                    }
+                                }
+
+                                if (channeldata.type === "WHAG") {
+                                    const requestCreateGupshup = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        data: createbody,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplateoriginal`,
+                                    });
+
+                                    if (requestCreateGupshup.data.success) {
+                                        let parameters = request.body;
+
+                                        parameters.corpid = request.user.corpid;
+                                        parameters.orgid = request.user.orgid;
+                                        parameters.username = request.user.usr;
+                                        parameters.namespace = requestCreateGupshup.data.result[0].id || null;
+                                        parameters.authenticationdata = null;
+                                        parameters.bodyvariables = null;
+                                        parameters.buttonsgeneric = null;
+                                        parameters.buttonsquickreply = null;
+                                        parameters.carouseldata = null;
+                                        parameters.headervariables = null;
+                                        parameters.newversion = false;
+                                        parameters.buttons = (request.body.buttons || []).length > 0 ? JSON.stringify(request.body.buttons) : null;
+                                        parameters.bodyobject = null;
+                                        parameters.categorychange = true;
+                                        parameters.firstbuttons = null;
+
+                                        const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
+                                            "UFN_MESSAGETEMPLATE_INS_OLD",
+                                            parameters,
+                                        );
+
+                                        if (queryMessageTemplateCreate instanceof Array) {
+                                            createsuccess = true;
+                                        } else {
+                                            requestCode = queryMessageTemplateCreate.code;
+                                            requestMessage = queryMessageTemplateCreate.code;
+                                        }
+                                    } else {
+                                        requestCode = requestCreateGupshup.data.operationMessage;
+                                        requestMessage = requestCreateGupshup.data.operationMessage;
                                     }
                                 }
                             }
