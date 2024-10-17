@@ -24,6 +24,7 @@ COPY ["package.json", "package-lock.json*", "./"]
 RUN apk add g++ make py3-pip
 RUN mkdir -p "/home/node/app/.npm"
 RUN chown -R 1000:1000 "/home/node/app/.npm"
+RUN chown -R 1000640000:0 "/home/node/app/.npm"
 RUN npm cache clean --force
 RUN npm install --${NODE_ENV}
 COPY . .
