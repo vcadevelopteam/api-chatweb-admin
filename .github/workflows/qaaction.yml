@@ -24,3 +24,4 @@ jobs:
           cd /var/www/html/api-laraigo-test
           git pull origin qa
           pm2 restart api-laraigo-test
+
