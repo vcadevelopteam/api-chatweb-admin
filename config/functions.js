@@ -734,7 +734,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_SEL1: {
         query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, true, 0, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL_OLD: {
@@ -749,7 +749,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS1: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where, true, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS_OLD: {
@@ -3571,7 +3571,7 @@ module.exports = {
     },
     UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP: {
         query: "SELECT * FROM ufn_communicationchannel_sel_whatsapp($corpid, $orgid)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP_PROVIDER: {
