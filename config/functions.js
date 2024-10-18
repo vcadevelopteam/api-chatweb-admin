@@ -1129,6 +1129,11 @@ module.exports = {
         module: "", //supervisor and inbox
         protected: "SELECT"
     },
+    UFN_GROUPSBYBOT_SEL: {
+        query: "SELECT * FROM ufn_groupsbybot_sel($corpid, $orgid, $userid)",
+        module: ["/message_inbox", "/supervisor"], //messag einbox y supervisor admitir arrays
+        protected: "SELECT"
+    },
     UFN_CONVERSATION_SEL_TICKETSBYUSER: {
         query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $agentid, $userid)",
         module: ["/message_inbox", "/supervisor"], //messag einbox y supervisor admitir arrays
