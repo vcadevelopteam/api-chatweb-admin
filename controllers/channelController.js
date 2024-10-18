@@ -3586,6 +3586,7 @@ exports.addTemplate = async (request, response) => {
                                         parameters.bodyobject = null;
                                         parameters.categorychange = true;
                                         parameters.firstbuttons = null;
+                                        parameters.variablecontext = request.body.variablecontext ? JSON.stringify(request.body.variablecontext) : null;
 
                                         const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                             "UFN_MESSAGETEMPLATE_INS_OLD",
@@ -3630,6 +3631,7 @@ exports.addTemplate = async (request, response) => {
                                         parameters.bodyobject = null;
                                         parameters.categorychange = true;
                                         parameters.firstbuttons = null;
+                                        parameters.variablecontext = request.body.variablecontext ? JSON.stringify(request.body.variablecontext) : null;
 
                                         const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                             "UFN_MESSAGETEMPLATE_INS_OLD",
@@ -3704,6 +3706,7 @@ exports.addTemplate = async (request, response) => {
                                             parameters.bodyobject = null;
                                             parameters.categorychange = parameters.categorychange ? true : false;
                                             parameters.firstbuttons = parameters.firstbuttons || null;
+                                            parameters.variablecontext = parameters.variablecontext ? JSON.stringify(parameters.variablecontext) : null;
 
                                             const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                                 "UFN_MESSAGETEMPLATE_INS",
@@ -3763,6 +3766,7 @@ exports.addTemplate = async (request, response) => {
                                             parameters.bodyobject = null;
                                             parameters.categorychange = parameters.categorychange ? true : false;
                                             parameters.firstbuttons = parameters.firstbuttons || null;
+                                            parameters.variablecontext = parameters.variablecontext ? JSON.stringify(parameters.variablecontext) : null;
 
                                             const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                                 "UFN_MESSAGETEMPLATE_INS",
@@ -3823,6 +3827,7 @@ exports.addTemplate = async (request, response) => {
                                             parameters.bodyobject = null;
                                             parameters.categorychange = parameters.categorychange ? true : false;
                                             parameters.firstbuttons = parameters.firstbuttons || null;
+                                            parameters.variablecontext = parameters.variablecontext ? JSON.stringify(parameters.variablecontext) : null;
 
                                             const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                                 "UFN_MESSAGETEMPLATE_INS",
@@ -3998,6 +4003,7 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.bodyobject = null;
                         parameters.categorychange = messagetemplate.categorychange ? true : false;
                         parameters.firstbuttons = messagetemplate.firstbuttons || null;
+                        parameters.variablecontext = parameters.variablecontext ? JSON.stringify(parameters.variablecontext) : null;
 
                         const queryMessageTemplateDelete = await triggerfunctions.executesimpletransaction(
                             "UFN_MESSAGETEMPLATE_INS",
