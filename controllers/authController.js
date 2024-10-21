@@ -65,6 +65,11 @@ const properties = [
         type: 'bool',
     },
     {
+        propertyname: "INFOTICKETSPORGRUPOS",
+        key: "show_info_tickets_by_groups",
+        type: 'bool',
+    },
+    {
         propertyname: "BLOQUEOENVIODOCUMENTOS",
         key: "lock_send_file_pc",
         type: 'bool',
