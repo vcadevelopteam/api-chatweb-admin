@@ -5215,4 +5215,15 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_PARTNERDEFAULT_INS: {
+        query: "SELECT * FROM ufn_partnerdefault_ins($corpid, $orgid, $partnerdefaultid, $country, $billing_currency, $document_type, $document_number, $business_name, $fiscal_address, $billing_contact, $billing_contact_email, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PARTNERDEFAULT_SEL: {
+        query: "SELECT * FROM ufn_partnerdefault_sel($corpid, $orgid, $partnerdefaultid)",
+        module: "",
+        protected: "SELECT"
+    }
+    
 }
