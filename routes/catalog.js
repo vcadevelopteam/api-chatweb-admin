@@ -28,6 +28,11 @@ router.post("/synchroproduct",
     catalogController.synchroProduct
 )
 
+router.post("/synchroproducttask",
+    ip,
+    catalogController.synchroProductTask
+)
+
 router.post("/importproduct",
     ip,
     auth,
