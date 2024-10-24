@@ -831,6 +831,144 @@ exports.manageProduct = async (request, response) => {
     }
 }
 
+exports.synchroProductTask = async (request, response) => {
+    try {
+        const { corpid, orgid, metacatalogid } = request.body;
+
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        const catalogresponse = await metaCatalogSel(corpid, orgid, 0, metacatalogid, request._requestid);
+
+        if (catalogresponse) {
+            const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+
+            if (businessresponse) {
+                let accessToken = businessresponse[0].accesstoken;
+                let catalogid = catalogresponse[0].catalogid;
+
+                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+
+                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,custom_number_0,custom_number_1,custom_number_2,custom_number_3,custom_number_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url,category_specific_fields,channels_to_integrity_status{rejection_information}&limit=500&bulk_pagination=true&access_token=${accessToken}`;
+                let continueLoop = true;
+                let listProduct = [];
+
+                while (continueLoop) {
+                    const result = await axiosObservable({
+                        data: {
+                            config: config,
+                            method: 'get',
+                            url: requestUrl,
+                        },
+                        method: 'post',
+                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (result.data) {
+                        if (result.data.data) {
+                            if (result.data.data.length > 0) {
+                                listProduct = [...listProduct, ...result.data.data];
+                            }
+                            else {
+                                continueLoop = false;
+                            }
+
+                            if (result.data.paging) {
+                                if (result.data.paging.next) {
+                                    requestUrl = result.data.paging.next;
+                                }
+                                else {
+                                    continueLoop = false;
+                                }
+                            }
+                            else {
+                                continueLoop = false;
+                            }
+                        }
+                        else {
+                            continueLoop = false;
+                        }
+                    }
+                    else {
+                        continueLoop = false;
+                    }
+                }
+
+                if (listProduct) {
+                    const insertData = listProduct?.map(data => {
+                        return {
+                            metacatalogid: metacatalogid || 0,
+                            productid: data?.retailer_id || '',
+                            retailerid: data?.id || '',
+                            title: data?.name || '',
+                            description: data?.description || '',
+                            descriptionshort: data?.short_description || '',
+                            availability: data?.availability || '',
+                            category: data?.category || '',
+                            condition: data?.condition || '',
+                            currency: data?.currency || '',
+                            price: parseFloat(data?.price?.split(",")?.join(".")?.replace(/[^\d.-]/g, '')?.replace(/[.](?=.*[.])/g, "") || '0.00'),
+                            saleprice: parseFloat(data?.sale_price?.split(",")?.join(".")?.replace(/[^\d.-]/g, '')?.replace(/[.](?=.*[.])/g, "") || '0.00'),
+                            link: data?.url || '',
+                            imagelink: data?.image_url || '',
+                            additionalimagelink: (data?.additional_image_urls ? data?.additional_image_urls[0] : '') || '',
+                            brand: data?.brand || '',
+                            color: data?.color || '',
+                            gender: data?.gender || '',
+                            material: data?.material || '',
+                            pattern: data?.pattern || '',
+                            size: data?.size || '',
+                            datestart: data?.start_date || null,
+                            datelaunch: data?.launch_date || null,
+                            dateexpiration: data?.expiration_date || null,
+                            labels: `${data?.custom_label_0},${data?.custom_label_1},${data?.custom_label_2},${data?.custom_label_3},${data?.custom_label_4}`,
+                            numbers: `${data?.custom_number_0},${data?.custom_number_1},${data?.custom_number_2},${data?.custom_number_3},${data?.custom_number_4}`,
+                            customlabel0: data?.custom_label_0 || '',
+                            customlabel1: data?.custom_label_1 || '',
+                            customlabel2: data?.custom_label_2 || '',
+                            customlabel3: data?.custom_label_3 || '',
+                            customlabel4: data?.custom_label_4 || '',
+                            customnumber0: data?.custom_number_0 || '',
+                            customnumber1: data?.custom_number_1 || '',
+                            customnumber2: data?.custom_number_2 || '',
+                            customnumber3: data?.custom_number_3 || '',
+                            customnumber4: data?.custom_number_4 || '',
+                            standardfeatures0: data?.category_specific_fields?.cell_phones_and_smart_watches?.standard_features[0] || '',
+                            reviewstatus: (data?.review_status || (data?.channels_to_integrity_status?.data[0]?.rejection_information ? 'rejected' : null)) || 'approved',
+                            reviewdescription: (data?.review_status || (data?.channels_to_integrity_status?.data[0]?.rejection_information?.message || null)) || '',
+                            status: 'ACTIVO',
+                            type: '',
+                        };
+                    })
+
+                    const productresponse = await productCatalogInsArray(corpid, orgid, metacatalogid, 'SCHEDULER', JSON.stringify(insertData), request._requestid);
+
+                    responsedata = genericfunctions.changeResponseData(responsedata, null, productresponse, null, 200, true);
+                }
+                else {
+                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productget', listProduct, 'Error obtaining product list', 400, false);
+                }
+            }
+            else {
+                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+            }
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nocatalog', null, 'Catalog not found', 400, false);
+        }
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        if (exception?.response?.data?.error?.message) {
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+    }
+}
+
 exports.synchroProduct = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
